@@ -3,7 +3,7 @@ import numpy as np
 import os
 import shutil
 
-HIGH_QUALITY = False
+HIGH_QUALITY = True
 
 BLACK = "#000000"
 DARK_GREY = "#3F3F3F"
@@ -11,9 +11,10 @@ GREY = "#7F7F7F"
 LIGHT_GREY = "#BFBFBF"
 WHITE = "#FFFFFF"
 RED = "#C3312F"
+ORANGE = "#EB7246"
 GREEN = "#00A390"
+CYAN = "00A6D6"
 BLUE = "#0065A1"
-PURPLE = "#624B68"
 
 DIRECTORY = os.path.realpath(os.path.dirname(__file__))
 DST_DIRECTORY = f"{DIRECTORY}/output"
@@ -240,7 +241,7 @@ class MainScene(Scene):
 
     def animate_slide_goal_is_zero_holonomy(self):
         self.next_slide()
-        self.set_title("TODO: Goal is zero holonomy (on all cycles)")
+        self.set_title("TODO: Goal is zero defect (on all cycles)")
         self.pause()
 
     def animate_slide_adjustment_angles(self):
@@ -291,9 +292,15 @@ class MainScene(Scene):
         )
         self.pause()
 
+        middle_edge = e[frozenset({(0, 1), (1, 1)})]
+        self.play(
+            middle_edge.animate.set_color(BLUE),
+            run_time=0.8
+        )
+        self.pause()
+
         face_i_text = Tex("$i$", color=GREY).scale(0.8).next_to(e[frozenset({(0, 0), (0, 1)})], DOWN).shift(DOWN * 0.3)
         face_j_text = Tex("$j$", color=GREY).scale(0.8).next_to(e[frozenset({(0, 1), (1, 2)})], DOWN).shift(DOWN * 0.3)
-        middle_edge = e[frozenset({(0, 1), (1, 1)})]
         edge_circle = Circle(0.5).set_stroke(BLUE, opacity=1).set_fill(WHITE, opacity=1)
         edge_circle_text = Tex("$x_{i \\to j}$").set_color(BLUE).scale(0.8)
         edge_circle_group = Group(edge_circle, edge_circle_text)
@@ -301,7 +308,6 @@ class MainScene(Scene):
         self.play(
             FadeIn(face_i_text),
             FadeIn(face_j_text),
-            middle_edge.animate.set_color(BLUE),
             GrowFromCenter(edge_circle_group, scale=0.5),
             run_time=0.8
         )
@@ -352,6 +358,16 @@ class MainScene(Scene):
         )
         self.wait(0.2)
 
+        opposite_adjustment_angle_formula_text = Tex("$x_{j \\to i}$", "$ = $", "$-$", "$x_{i \\to j}$", color=BLACK)
+        opposite_adjustment_angle_formula_text.set_color_by_tex("x", BLUE)
+        opposite_adjustment_angle_formula_text.set_color_by_tex("-", RED)
+        opposite_adjustment_angle_formula_text.scale(1.5).to_edge(DOWN).shift(UP * 0.2)
+        self.play(
+            FadeIn(opposite_adjustment_angle_formula_text, shift=DOWN * 0.5),
+            run_time=0.5
+        )
+        self.pause()
+
         tangent_vector_j_ghost = tangent_vector_j.copy()
         tangent_vector_j_ghost.set_opacity(0.35)
         self.add(tangent_vector_j_ghost)
@@ -367,20 +383,10 @@ class MainScene(Scene):
         )
         self.pause()
 
-        opposite_adjustment_angle_formula_text = Tex("$x_{j \\to i}$", "$ = $", "$-$", "$x_{i \\to j}$", color=BLACK)
-        opposite_adjustment_angle_formula_text.set_color_by_tex("x", BLUE)
-        opposite_adjustment_angle_formula_text.set_color_by_tex("-", RED)
-        opposite_adjustment_angle_formula_text.scale(1.5).to_edge(DOWN).shift(UP * 0.2)
-        self.play(
-            FadeIn(opposite_adjustment_angle_formula_text, shift=DOWN * 0.5),
-            run_time=0.5
-        )
-        self.pause()
-
     def animate_slide_equation_for_basis_cycle(self):
         self.next_slide()
         self.set_title("Our first equation")
-        self.add_bullet_point("- Goal: Zero holonomy on any cycle", t2w={"Zero holonomy": BOLD})
+        self.add_bullet_point("- Goal: Zero defect on a cycle", t2w={"Zero defect": BOLD})
         self.pause()
 
         v, e, f = self.generate_triangle_mesh([
@@ -492,7 +498,7 @@ class MainScene(Scene):
         )
         self.pause()
 
-        self.add_bullet_point("- Idea: cancel out holonomy", t2w={"cancel out": BOLD})
+        self.add_bullet_point("- Idea: cancel out defect", t2w={"cancel out": BOLD})
         self.add_bullet_point("  using adjustment angles").shift(UP * 0.12)
         self.pause()
 
@@ -574,9 +580,9 @@ class MainScene(Scene):
         interpolation_steps = 24
         angle_delta = 2 * np.pi / interpolation_steps
         for i in range(interpolation_steps):
-            pos_angle = -0.5 * np.pi + 2 * np.pi * (i / interpolation_steps)
+            pos_angle = -0.25 * np.pi + 2 * np.pi * (i / interpolation_steps)
             pos = middle_vertex.get_center() + 1.2 * np.array([np.cos(pos_angle), np.sin(pos_angle), 0])
-            tangent_vector = Arrow(max_tip_length_to_length_ratio=0.12).set_color(RED).put_start_and_end_on(pos, pos + 0.5 * DOWN)
+            tangent_vector = Arrow(max_tip_length_to_length_ratio=0.12).set_color(RED).put_start_and_end_on(pos, pos + 0.35 * (DOWN + RIGHT))
             tangent_vector.rotate((np.random.random() - 0.5) * 0.2, about_point = tangent_vector.get_start())
             tangent_vectors.append(tangent_vector)
 
@@ -589,6 +595,7 @@ class MainScene(Scene):
         self.play(
             AnimationGroup(
                 *[self.create_arrow(j) for j in tangent_vectors],
+                run_time=1.2,
                 lag_ratio=0.02
             ),
         )
@@ -604,8 +611,11 @@ class MainScene(Scene):
             Transform(k_value_text_1, k_value_text_2, replace_mobject_with_target_in_scene=True),
             run_time=1.6
         )
+        self.pause()
+
         self.play(
             FadeIn(singularity_plus_one_image, scale=0.2),
+            *[j.animate.set_opacity(0.4) for j in tangent_vectors],
             run_time=0.6
         )
         self.pause()
@@ -614,7 +624,8 @@ class MainScene(Scene):
         singularity_minus_one_image.scale(2).move_to(middle_vertex)
         self.play(
             FadeOut(singularity_plus_one_image),
-            run_time=0.2
+            *[j.animate.set_opacity(1) for j in tangent_vectors],
+            run_time=0.4
         )
         self.play(
             *[Rotate(tangent_vectors[j], -2 * angle_delta * j, about_point=tangent_vectors[j].get_start()) for j in range(len(tangent_vectors))],
@@ -623,6 +634,7 @@ class MainScene(Scene):
         )
         self.play(
             FadeIn(singularity_minus_one_image, scale=0.2),
+            *[j.animate.set_opacity(0.4) for j in tangent_vectors],
             run_time=0.6
         )
         self.pause()
@@ -634,7 +646,7 @@ class MainScene(Scene):
     def animate_slide_adding_basis_cycles(self):
         self.next_slide()
         self.set_title("What about bigger cycles?")
-        self.add_bullet_point("- Goal: Correct holonomy on all cycles", t2w={"all": BOLD})
+        self.add_bullet_point("- Goal: Zero defect on all cycles", t2w={"all": BOLD})
         self.pause()
 
         v, e, f = self.generate_triangle_mesh([
@@ -657,8 +669,9 @@ class MainScene(Scene):
         ]
         path_1_arrows = []
         for i in range(len(path_1)):
-            fa, fb = path_1[i - 1], path_1[i]
-            arrow = Arrow(max_tip_length_to_length_ratio=0.12).set_color(BLUE).put_start_and_end_on(fa.get_center(), fb.get_center())
+            pos_i, pos_j = path_1[i - 1].get_center(), path_1[i].get_center()
+            pos_i, pos_j = pos_i + 0.05 * (pos_j - pos_i), pos_j + 0.05 * (pos_i - pos_j)
+            arrow = Arrow(max_tip_length_to_length_ratio=0.12).set_color(BLUE).put_start_and_end_on(pos_i, pos_j)
             path_1_arrows.append(arrow)
 
         self.play(
@@ -677,8 +690,9 @@ class MainScene(Scene):
         ]
         path_2_arrows = []
         for i in range(len(path_2)):
-            fa, fb = path_2[i - 1], path_2[i]
-            arrow = Arrow(max_tip_length_to_length_ratio=0.12).set_color(RED).put_start_and_end_on(fa.get_center(), fb.get_center())
+            pos_i, pos_j = path_2[i - 1].get_center(), path_2[i].get_center()
+            pos_i, pos_j = pos_i + 0.05 * (pos_j - pos_i), pos_j + 0.05 * (pos_i - pos_j)
+            arrow = Arrow(max_tip_length_to_length_ratio=0.12).set_color(GREEN).put_start_and_end_on(pos_i, pos_j)
             path_2_arrows.append(arrow)
 
         left_arrow, right_arrow = path_1_arrows[2], path_2_arrows[5]
@@ -690,11 +704,11 @@ class MainScene(Scene):
         )
         self.pause()
 
-        plus_text = Tex("$+$", color=PURPLE).set_background_stroke(color=WHITE, opacity=1, width=3).next_to(left_arrow, LEFT).shift((0.25, 0.3, 0))
-        minus_text = Tex("$-$", color=PURPLE).set_background_stroke(color=WHITE, opacity=1, width=3).next_to(right_arrow, RIGHT).shift((-0.25, -0.3, 0))
+        plus_text = Tex("$+$", color=ORANGE).set_background_stroke(color=WHITE, opacity=1, width=3).next_to(left_arrow, LEFT).shift((0.25, 0.3, 0))
+        minus_text = Tex("$-$", color=ORANGE).set_background_stroke(color=WHITE, opacity=1, width=3).next_to(right_arrow, RIGHT).shift((-0.25, -0.3, 0))
         self.play(
-            left_arrow.animate.set_color(PURPLE),
-            right_arrow.animate.set_color(PURPLE),
+            left_arrow.animate.set_color(ORANGE),
+            right_arrow.animate.set_color(ORANGE),
             FadeIn(plus_text, shift=LEFT * 0.2),
             FadeIn(minus_text, shift=RIGHT * 0.2),
             run_time=0.6
@@ -719,23 +733,26 @@ class MainScene(Scene):
     ###################################
 
     def animate(self):
-        self.animate_slide_intro_outro()
-        self.animate_slide_problem_description()
-        self.animate_slide_relevance()
+        # self.animate_slide_intro_outro()
+        # self.animate_slide_problem_description()
+        # self.animate_slide_relevance()
 
-        self.animate_slide_example_on_flat_surface()
-        self.animate_slide_problem_with_curved_surface()
+        # self.animate_slide_example_on_flat_surface()
+        # self.animate_slide_problem_with_curved_surface()
 
-        self.animate_slide_goal_is_zero_holonomy()
+        # self.animate_slide_goal_is_zero_holonomy()
 
-        self.animate_slide_adjustment_angles()
-        self.animate_slide_equation_for_basis_cycle()
-        self.animate_slide_basis_cycle_with_singularities()
+        # self.animate_slide_adjustment_angles()
+        # self.animate_slide_equation_for_basis_cycle()
+        # self.animate_slide_basis_cycle_with_singularities()
+        # self.animate_slide_recap_basis_cycle()
         self.animate_slide_adding_basis_cycles()
-
+        
         self.animate_slide_intro_outro()
 
 if __name__ == "__main__":
     render_slides(HIGH_QUALITY)
 
     import run
+
+# TODO: explain what a "trivial connection" is
