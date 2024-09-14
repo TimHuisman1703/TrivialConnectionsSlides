@@ -3,7 +3,7 @@ import numpy as np
 import os
 import shutil
 
-HIGH_QUALITY = True
+HIGH_QUALITY = False
 
 BLACK = "#000000"
 DARK_GREY = "#3F3F3F"
@@ -22,6 +22,7 @@ DST_DIRECTORY = f"{DIRECTORY}/output"
 BACKGROUND_COLOR = WHITE
 
 config.background_color = BACKGROUND_COLOR
+config.max_files_cached = 1000
 
 def render_slides(high_quality=True):
     framerate = 24
@@ -105,7 +106,7 @@ class MainScene(Scene):
 
     def generate_triangle_mesh(self, grid, spacing=1):
         def pos(x, y):
-            return np.array([x - 0.5 * y, y * np.sqrt(3) / 2, 0]) * spacing
+            return np.array([x - 0.5 * y, -y * np.sqrt(3) / 2, 0]) * spacing
 
         vertex_map = {}
         for iy in range(len(grid)):
@@ -263,7 +264,7 @@ class MainScene(Scene):
         for edge in e.values():
             edge.set_stroke(RED)
         mesh_group = Group(*f.values(), *e.values(), *v.values())
-        mesh_group.rotate(-0.5 * np.pi).move_to(3 * RIGHT)
+        mesh_group.rotate(0.5 * np.pi).move_to(3 * RIGHT)
 
         self.add(icosphere_image)
         self.pause()
@@ -395,18 +396,18 @@ class MainScene(Scene):
             [1, 2],
         ], spacing=2)
         mesh_group = Group(*f.values(), *e.values(), *v.values())
-        mesh_group.move_to(ORIGIN).shift(3 * RIGHT)
+        mesh_group.move_to(3 * RIGHT)
 
         self.add(mesh_group)
         self.pause()
 
         path_face_keys = [
-            frozenset({(0, 0), (1, 0), (1, 1)}),
-            frozenset({(1, 0), (1, 1), (2, 1)}),
-            frozenset({(1, 1), (2, 1), (2, 2)}),
             frozenset({(1, 1), (1, 2), (2, 2)}),
-            frozenset({(0, 1), (1, 1), (1, 2)}),
+            frozenset({(1, 1), (2, 1), (2, 2)}),
+            frozenset({(1, 0), (1, 1), (2, 1)}),
+            frozenset({(0, 0), (1, 0), (1, 1)}),
             frozenset({(0, 0), (0, 1), (1, 1)}),
+            frozenset({(0, 1), (1, 1), (1, 2)}),
         ]
 
         edge_circles = []
@@ -568,7 +569,7 @@ class MainScene(Scene):
         self.pause()
 
         middle_vertex = Circle(0.24).set_stroke(opacity=0).set_fill(GREEN, opacity=1)
-        middle_vertex.move_to(ORIGIN).shift(3 * RIGHT)
+        middle_vertex.move_to(3 * RIGHT)
         k_text = Tex("$k$", color=WHITE).scale(0.8).move_to(middle_vertex)
         outline_rectangle = Rectangle(WHITE, 4, 4).set_stroke(LIGHT_GREY, width=3).set_fill(opacity=0)
         outline_rectangle.move_to(middle_vertex)
@@ -655,17 +656,17 @@ class MainScene(Scene):
             [1, 2, 3],
         ], spacing=2)
         mesh_group = Group(*f.values(), *e.values(), *v.values())
-        mesh_group.move_to(DOWN)
+        mesh_group.move_to(DOWN * 0.5)
         self.add(mesh_group)
         self.pause()
 
         path_1 = [
-            f[frozenset({(0, 0), (1, 0), (1, 1)})],
-            f[frozenset({(1, 0), (1, 1), (2, 1)})],
-            f[frozenset({(1, 1), (2, 1), (2, 2)})],
-            f[frozenset({(1, 1), (1, 2), (2, 2)})],
-            f[frozenset({(0, 1), (1, 1), (1, 2)})],
             f[frozenset({(0, 0), (0, 1), (1, 1)})],
+            f[frozenset({(0, 1), (1, 1), (1, 2)})],
+            f[frozenset({(1, 1), (1, 2), (2, 2)})],
+            f[frozenset({(1, 1), (2, 1), (2, 2)})],
+            f[frozenset({(1, 0), (1, 1), (2, 1)})],
+            f[frozenset({(0, 0), (1, 0), (1, 1)})],
         ]
         path_1_arrows = []
         for i in range(len(path_1)):
@@ -681,12 +682,12 @@ class MainScene(Scene):
         self.pause()
 
         path_2 = [
-            f[frozenset({(1, 0), (2, 0), (2, 1)})],
-            f[frozenset({(2, 0), (2, 1), (3, 1)})],
-            f[frozenset({(2, 1), (3, 1), (3, 2)})],
-            f[frozenset({(2, 1), (2, 2), (3, 2)})],
-            f[frozenset({(1, 1), (2, 1), (2, 2)})],
             f[frozenset({(1, 0), (1, 1), (2, 1)})],
+            f[frozenset({(1, 1), (2, 1), (2, 2)})],
+            f[frozenset({(2, 1), (2, 2), (3, 2)})],
+            f[frozenset({(2, 1), (3, 1), (3, 2)})],
+            f[frozenset({(2, 0), (2, 1), (3, 1)})],
+            f[frozenset({(1, 0), (2, 0), (2, 1)})],
         ]
         path_2_arrows = []
         for i in range(len(path_2)):
@@ -695,12 +696,107 @@ class MainScene(Scene):
             arrow = Arrow(max_tip_length_to_length_ratio=0.12).set_color(GREEN).put_start_and_end_on(pos_i, pos_j)
             path_2_arrows.append(arrow)
 
-        left_arrow, right_arrow = path_1_arrows[2], path_2_arrows[5]
+        left_arrow, right_arrow = path_1_arrows[4], path_2_arrows[1]
         right_arrow.shift(RIGHT * 0.1)
         self.play(
             left_arrow.animate.shift(LEFT * 0.1),
             FadeIn(Group(*path_2_arrows), scale=0.5),
             run_time=0.6
+        )
+        self.pause()
+
+        tangent_vector_pos = Dot(f[frozenset({(1, 0), (1, 1), (2, 1)})].get_center()).set_opacity(0)
+        tangent_vector_dir = Dot(UP * 1.6).set_opacity(0)
+        tangent_vector = always_redraw(
+            lambda: Arrow(max_tip_length_to_length_ratio=0.12).set_color(RED)
+                .put_start_and_end_on(tangent_vector_pos.get_center(), tangent_vector_pos.get_center() + tangent_vector_dir.get_center())
+        )
+        self.play(
+            self.create_arrow(tangent_vector),
+            run_time=0.6
+        )
+        self.pause()
+
+        tangent_vector_ghost_1 = tangent_vector.copy().set_opacity(0.4)
+        self.add(tangent_vector_ghost_1)
+        angle_defect_1 = -0.12 * np.pi
+        angle_defect_arc_1 = Arc(1.2, 0.5 * np.pi, angle_defect_1).set_color(BLUE)
+        angle_defect_arc_1.shift(tangent_vector_pos.get_center())
+        angle_defect_text_1 = Tex("$\\delta_1$").set_color(BLUE).scale(0.6)
+        angle_defect_text_1.move_to(angle_defect_arc_1).shift((0.05, 0.25, 0))
+        self.play(
+            Rotate(tangent_vector_pos, 2 * np.pi, about_point=v[(1, 1)].get_center()),
+            Rotate(tangent_vector_dir, angle_defect_1, about_point=ORIGIN),
+            run_time=1.6
+        )
+        self.play(
+            Create(angle_defect_arc_1),
+            FadeIn(angle_defect_text_1),
+            run_time=0.8
+        )
+        self.pause()
+
+        tangent_vector_ghost_2 = tangent_vector.copy().set_opacity(0.4)
+        self.add(tangent_vector_ghost_2)
+        angle_defect_2 = -0.18 * np.pi
+        angle_defect_arc_2 = Arc(1.2, 0.5 * np.pi + angle_defect_1, angle_defect_2).set_color(GREEN)
+        angle_defect_arc_2.shift(tangent_vector_pos.get_center())
+        angle_defect_text_2 = Tex("$\\delta_2$").set_color(GREEN).scale(0.6)
+        angle_defect_text_2.move_to(angle_defect_arc_2).shift((0.15, 0.2, 0))
+        self.play(
+            Rotate(tangent_vector_pos, 2 * np.pi, about_point=v[(2, 1)].get_center()),
+            Rotate(tangent_vector_dir, angle_defect_2, about_point=ORIGIN),
+            run_time=1.6
+        )
+        self.play(
+            Create(angle_defect_arc_2),
+            FadeIn(angle_defect_text_2),
+            run_time=0.8
+        )
+        self.pause()
+
+        linear_formula_tex_1 = Tex("$\\sum_{x \\in C_1} x = -\\delta_1$", color=BLUE)
+        linear_formula_tex_1.shift(DOWN * 3 + LEFT * 3)
+        self.add(linear_formula_tex_1)
+        self.pause()
+
+        angle_defect_text_2.generate_target()
+        angle_defect_text_2.target.rotate(angle_defect_1)
+        angle_defect_text_2.target.rotate(-angle_defect_1, about_point=tangent_vector_pos.get_center())
+        self.play(
+            FadeOut(angle_defect_text_1),
+            Uncreate(angle_defect_arc_1),
+            MoveToTarget(angle_defect_text_2),
+            Rotate(tangent_vector_ghost_2, -angle_defect_1, about_point=tangent_vector_pos.get_center()),
+            Rotate(tangent_vector_dir, -angle_defect_1, about_point=ORIGIN),
+            Rotate(angle_defect_arc_2, -angle_defect_1, about_point=tangent_vector_pos.get_center()),
+            run_time=1.2
+        )
+        self.pause()
+
+        linear_formula_tex_2 = Tex("$\\sum_{x \\in C_2} x = -\\delta_2$", color=GREEN)
+        linear_formula_tex_2.shift(DOWN * 3 + RIGHT * 3)
+        self.add(linear_formula_tex_2)
+        self.wait(0.5)
+        self.play(
+            FadeOut(angle_defect_text_2),
+            Uncreate(angle_defect_arc_2),
+            Rotate(tangent_vector_dir, -angle_defect_2, about_point=ORIGIN),
+            run_time=1.2
+        )
+        self.remove(tangent_vector_ghost_1)
+        self.remove(tangent_vector_ghost_2)
+        self.pause()
+        
+        self.play(
+            Rotate(tangent_vector_pos, 2 * np.pi, about_point=v[(1, 1)].get_center()),
+            rate_func=rush_into,
+            run_time=1.2
+        )
+        self.play(
+            Rotate(tangent_vector_pos, 2 * np.pi, about_point=v[(2, 1)].get_center()),
+            rate_func=rush_from,
+            run_time=1.2
         )
         self.pause()
 
@@ -723,8 +819,23 @@ class MainScene(Scene):
             run_time=1.2
         )
         self.pause()
+        
+        self.play(
+            Rotate(tangent_vector_pos, (5 / 3) * np.pi, about_point=v[(1, 1)].get_center()),
+            rate_func=rush_into,
+            run_time=1.2
+        )
+        self.play(
+            Rotate(tangent_vector_pos, (5 / 3) * np.pi, about_point=v[(2, 1)].get_center()),
+            rate_func=rush_from,
+            run_time=1.2
+        )
+        self.pause()
 
         # TODO: add equations
+    
+    def animate_slide_explain_nonretractible_cycles(self):
+        
 
     ###################################
     #                                 #
@@ -733,21 +844,22 @@ class MainScene(Scene):
     ###################################
 
     def animate(self):
-        # self.animate_slide_intro_outro()
-        # self.animate_slide_problem_description()
-        # self.animate_slide_relevance()
+        self.animate_slide_intro_outro()
+        self.animate_slide_problem_description()
+        self.animate_slide_relevance()
 
-        # self.animate_slide_example_on_flat_surface()
-        # self.animate_slide_problem_with_curved_surface()
+        self.animate_slide_example_on_flat_surface()
+        self.animate_slide_problem_with_curved_surface()
 
-        # self.animate_slide_goal_is_zero_holonomy()
+        self.animate_slide_goal_is_zero_holonomy()
 
-        # self.animate_slide_adjustment_angles()
-        # self.animate_slide_equation_for_basis_cycle()
-        # self.animate_slide_basis_cycle_with_singularities()
+        self.animate_slide_adjustment_angles()
+        self.animate_slide_equation_for_basis_cycle()
+        self.animate_slide_basis_cycle_with_singularities()
         # self.animate_slide_recap_basis_cycle()
         self.animate_slide_adding_basis_cycles()
-        
+        # self.animate_slide_explain_nonretractible_cycles()
+
         self.animate_slide_intro_outro()
 
 if __name__ == "__main__":
