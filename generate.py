@@ -15,6 +15,7 @@ ORANGE = "#EB7246"
 GREEN = "#00A390"
 CYAN = "00A6D6"
 BLUE = "#0065A1"
+PURPLE = "#6311B7"
 
 DIRECTORY = os.path.realpath(os.path.dirname(__file__))
 DST_DIRECTORY = f"{DIRECTORY}/output"
@@ -300,8 +301,8 @@ class MainScene(Scene):
         )
         self.pause()
 
-        face_i_text = Tex("$i$", color=GREY).scale(0.8).next_to(e[frozenset({(0, 0), (0, 1)})], DOWN).shift(DOWN * 0.3)
-        face_j_text = Tex("$j$", color=GREY).scale(0.8).next_to(e[frozenset({(0, 1), (1, 2)})], DOWN).shift(DOWN * 0.3)
+        face_i_text = Tex("$i$", color=GREY).scale(0.8).next_to(e[frozenset({(0, 0), (0, 1)})], UP).shift(DOWN * 0.3)
+        face_j_text = Tex("$j$", color=GREY).scale(0.8).next_to(e[frozenset({(0, 1), (1, 2)})], UP).shift(DOWN * 0.3)
         edge_circle = Circle(0.5).set_stroke(BLUE, opacity=1).set_fill(WHITE, opacity=1)
         edge_circle_text = Tex("$x_{i \\to j}$").set_color(BLUE).scale(0.8)
         edge_circle_group = Group(edge_circle, edge_circle_text)
@@ -345,10 +346,14 @@ class MainScene(Scene):
         self.pause()
 
         adjustment_angle_text = Text("\"Adjustment Angle\"", color=BLUE).to_edge(UP).shift(DOWN * 0.2)
-        self.play(
-            FadeIn(adjustment_angle_text, shift=UP * 0.5),
-            run_time=0.5
-        )
+        self.add(adjustment_angle_text)
+        self.pause()
+
+        opposite_adjustment_angle_formula_text = Tex("$x_{j \\to i}$", "$ = $", "$-$", "$x_{i \\to j}$", color=BLACK)
+        opposite_adjustment_angle_formula_text.set_color_by_tex("x", BLUE)
+        opposite_adjustment_angle_formula_text.set_color_by_tex("-", RED)
+        opposite_adjustment_angle_formula_text.scale(1.5).to_edge(DOWN).shift(UP * 0.2)
+        self.add(opposite_adjustment_angle_formula_text)
         self.pause()
 
         tangent_vector_j = tangent_vector_i.copy()
@@ -358,16 +363,6 @@ class MainScene(Scene):
             run_time=0.8
         )
         self.wait(0.2)
-
-        opposite_adjustment_angle_formula_text = Tex("$x_{j \\to i}$", "$ = $", "$-$", "$x_{i \\to j}$", color=BLACK)
-        opposite_adjustment_angle_formula_text.set_color_by_tex("x", BLUE)
-        opposite_adjustment_angle_formula_text.set_color_by_tex("-", RED)
-        opposite_adjustment_angle_formula_text.scale(1.5).to_edge(DOWN).shift(UP * 0.2)
-        self.play(
-            FadeIn(opposite_adjustment_angle_formula_text, shift=DOWN * 0.5),
-            run_time=0.5
-        )
-        self.pause()
 
         tangent_vector_j_ghost = tangent_vector_j.copy()
         tangent_vector_j_ghost.set_opacity(0.35)
@@ -640,11 +635,24 @@ class MainScene(Scene):
         )
         self.pause()
 
-        # TODO: add equation
+        linear_formula_tex = Tex("$\\sum$", "$x$", "$~=~$", "$-\\delta$", "$~+~2\\pi \\cdot k$", color=BLACK)
+        linear_formula_tex.set_color_by_tex("x", BLUE)
+        linear_formula_tex.set_color_by_tex("\\delta", RED)
+        linear_formula_tex.set_color_by_tex("k", GREEN)
+        linear_formula_tex.move_to(self.next_bullet_point_pos, LEFT + UP).shift((0.3, -0.8, 0))
+        self.add(linear_formula_tex[:-1])
+        self.pause()
+
+        self.play(
+            Write(linear_formula_tex[-1]),
+            run_time=0.8
+        )
+        self.pause()
 
         self.remove_foreground_mobjects(middle_vertex, k_text)
 
     def animate_slide_adding_basis_cycles(self):
+        """
         self.next_slide()
         self.set_title("What about bigger cycles?")
         self.add_bullet_point("- Goal: Zero defect on all cycles", t2w={"all": BOLD})
@@ -787,7 +795,7 @@ class MainScene(Scene):
         self.remove(tangent_vector_ghost_1)
         self.remove(tangent_vector_ghost_2)
         self.pause()
-        
+
         self.play(
             Rotate(tangent_vector_pos, 2 * np.pi, about_point=v[(1, 1)].get_center()),
             rate_func=rush_into,
@@ -819,7 +827,7 @@ class MainScene(Scene):
             run_time=1.2
         )
         self.pause()
-        
+
         self.play(
             Rotate(tangent_vector_pos, (5 / 3) * np.pi, about_point=v[(1, 1)].get_center()),
             rate_func=rush_into,
@@ -831,11 +839,104 @@ class MainScene(Scene):
             run_time=1.2
         )
         self.pause()
+        """
 
-        # TODO: add equations
-    
-    def animate_slide_explain_nonretractible_cycles(self):
-        
+        self.next_slide()
+
+        v, e, f = self.generate_triangle_mesh([
+            [*range(10)] for _ in range(6)
+        ], spacing=2)
+        mesh_group = Group(*f.values(), *e.values(), *v.values())
+        mesh_group.move_to(ORIGIN)
+
+        singularity_vertices = {
+            (1, 1): 1,
+            (6, 3): -2,
+            (4, 4): -1,
+        }
+        for key, value in singularity_vertices.items():
+            vertex = v[key]
+            vertex.scale(3).set_fill_color(GREEN)
+            k_text = Tex(f"${value}$", color=WHITE).scale(0.6).move_to(vertex)
+            mesh_group.add(k_text)
+
+        self.add(mesh_group)
+        self.pause()
+
+    def animate_slide_explain_noncontractible_cycles(self):
+        self.next_slide()
+        self.set_title("Almost there...")
+        self.add_bullet_point("- Have we covered all cycles?")
+        self.pause()
+
+        cycle_types_image_1 = self.load_image("cycle_types_1").scale(0.9)
+        cycle_types_image_1.to_corner(UP + RIGHT)
+        self.add(cycle_types_image_1)
+        self.add_bullet_point("  - No, only contractible cycles!", t2c={"contractible": BLUE})
+        self.pause()
+
+        cycle_types_image_2 = self.load_image("cycle_types_2").scale(0.9)
+        cycle_types_image_2.to_corner(UP + RIGHT)
+        self.remove(cycle_types_image_1)
+        self.add(cycle_types_image_2)
+        self.add_bullet_point("- Noncontractible cycles not covered yet.", t2c={"Noncontractible": PURPLE}, t2s={"yet": ITALIC})
+        self.pause()
+
+        self.add_bullet_point("- How to get noncontractible cycles?", t2c={"noncontractible cycles": PURPLE})
+        self.pause()
+
+        tree_cotree_decomposition_image = self.load_image("tree_cotree_decomposition")
+        tree_cotree_decomposition_image.scale(0.8).to_corner(DOWN + RIGHT)
+        self.add_bullet_point("  - Tree-cotree decomposition!", t2s={"Tree-cotree decomposition": ITALIC})
+        self.add_bullet_point("    (Eppstein 2023)", color=GREY).shift(UP * 0.12)
+        self.add(tree_cotree_decomposition_image)
+        self.pause()
+
+    def animate_slide_matrix_equation(self):
+        self.next_slide()
+
+        linear_equations = []
+        for iy in range(12):
+            linear_equation = []
+            for ix in range(17):
+                if ix == 13 or ix == 15:
+                    continue
+
+                if ix == 6:
+                    tex = Tex("$\\ldots$")
+                elif ix == 14:
+                    tex = Tex("$=$")
+                elif ix == 16:
+                    tex = Tex(f"$-\\delta_{{{iy + 1}}}$")
+                elif ix % 2:
+                    tex = Tex("$+$" if np.random.random() < 0.6 else "$-$")
+                else:
+                    idx = np.random.randint(1, 100)
+                    tex = Tex(f"$x_{{e_{{{idx}}}}}$")
+                tex.set_color(BLACK)
+                tex.scale(0.8).shift((-5.6 + 0.7 * ix, 3.5 - 0.73 * iy, 0))
+                self.add(tex)
+
+                linear_equation.append(tex)
+            linear_equations.append(linear_equation)
+        self.pause()
+
+        for iy in range(2):
+            for tex in linear_equations[iy]:
+                tex.set_color(PURPLE).scale(1.25)
+        self.pause()
+
+        for iy in range(2, len(linear_equations)):
+            for tex in linear_equations[iy]:
+                tex.set_color(BLUE).scale(1.25)
+        self.pause()
+
+        mask_rectangle = Square(100).set_fill(WHITE, opacity=0.7)
+        matrix_formula_tex = Tex("$A$", "$\\textbf{x}$" "$~=~$", "$\\textbf{b}$", color=BLACK).set_background_stroke(color=WHITE, opacity=1, width=6).scale(1.6)
+
+        self.add(mask_rectangle)
+        self.add(matrix_formula_tex)
+        self.pause()
 
     ###################################
     #                                 #
@@ -844,21 +945,23 @@ class MainScene(Scene):
     ###################################
 
     def animate(self):
-        self.animate_slide_intro_outro()
-        self.animate_slide_problem_description()
-        self.animate_slide_relevance()
+        # self.animate_slide_intro_outro()
+        # self.animate_slide_problem_description()
+        # self.animate_slide_relevance()
 
-        self.animate_slide_example_on_flat_surface()
-        self.animate_slide_problem_with_curved_surface()
+        # self.animate_slide_example_on_flat_surface()
+        # self.animate_slide_problem_with_curved_surface()
 
-        self.animate_slide_goal_is_zero_holonomy()
+        # self.animate_slide_goal_is_zero_holonomy()
 
-        self.animate_slide_adjustment_angles()
-        self.animate_slide_equation_for_basis_cycle()
-        self.animate_slide_basis_cycle_with_singularities()
+        # self.animate_slide_adjustment_angles()
+        # self.animate_slide_equation_for_basis_cycle()
+        # self.animate_slide_basis_cycle_with_singularities()
         # self.animate_slide_recap_basis_cycle()
         self.animate_slide_adding_basis_cycles()
-        # self.animate_slide_explain_nonretractible_cycles()
+        # self.animate_slide_explain_noncontractible_cycles()
+
+        # self.animate_slide_matrix_equation()
 
         self.animate_slide_intro_outro()
 

@@ -34,6 +34,7 @@ for cap_filename in cap_filenames:
     frames.append(curr_frames)
 
     print(f"\033[30;1mLoaded {cap_filename} ({len(curr_frames)} frames)\033[0m")
+print(f"\033[32;1mRunning!\033[0m")
 
 merged_frames = [[]]
 for idx, curr_frames in enumerate(frames):
