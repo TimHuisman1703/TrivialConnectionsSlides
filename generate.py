@@ -3,7 +3,7 @@ import numpy as np
 import os
 import shutil
 
-HIGH_QUALITY = True
+HIGH_QUALITY = False
 
 BLACK = "#000000"
 DARK_GREY = "#3F3F3F"
@@ -205,7 +205,7 @@ class MainScene(Scene):
         self.add(hair_rendering_image)
         self.pause()
 
-        surface_parameterization_image = self.load_image("surface_parameterization").scale(0.8)
+        surface_parameterization_image = self.load_image("surface_parameterization").scale(0.75)
         surface_parameterization_image.to_corner(UP + RIGHT)
         self.add_bullet_point("- Surface parameterization")
         self.add(surface_parameterization_image)
@@ -382,7 +382,7 @@ class MainScene(Scene):
             run_time=1.2
         )
         self.pause()
-        
+
         pos_left_2_3 = np.array([-1.62, -1.45, 0])
         dir_left_2 = np.array([-1.3, 0.6, 0])
         dir_left_2 *= 1.2 / np.linalg.norm(dir_left_2)
@@ -433,9 +433,31 @@ class MainScene(Scene):
         )
         self.pause()
 
-    def animate_slide_goal_is_zero_defect(self):
+        self.add_bullet_point("- Defects (δ) lead to path dependence.", t2c={"defect": RED, "δ": RED}, t2s={"path dependence": ITALIC})
+        self.pause()
+
+        self.add_bullet_point("- Goal: Zero defect on all cycles.", t2c={"defect": RED}, t2w={"Zero defect": BOLD, "all cycles": BOLD})
+        self.pause()
+
+    def animate_slide_paper_contribution(self):
         self.next_slide()
-        self.set_title("TODO: Goal is zero defect (on all cycles)")
+        self.set_title("Contribution")
+
+        intro_bunny_image = self.load_image("intro_bunny")
+        intro_bunny_image.shift(3.2 * RIGHT)
+        self.add(intro_bunny_image)
+        self.pause()
+
+        self.add_bullet_point("- Algorithm for constructing vector fields.")
+        self.pause()
+
+        self.add_bullet_point("  - Efficient;")
+        self.pause()
+
+        self.add_bullet_point("  - Allows full control over singularities;")
+        self.pause()
+
+        self.add_bullet_point("  - Elegant.")
         self.pause()
 
     def animate_slide_adjustment_angles(self):
@@ -467,7 +489,7 @@ class MainScene(Scene):
             FadeOut(transition_arrow, shift=LEFT * 5),
             Group(*e.values()).animate.scale(2).move_to(ORIGIN).set_color(LIGHT_GREY),
             Group(*v.values(), *f.values()).animate.scale(2).move_to(ORIGIN),
-            run_time=1.6
+            run_time=1.2
         )
         self.pause()
 
@@ -524,10 +546,10 @@ class MainScene(Scene):
         )
         self.wait(0.3)
 
-        adjustment_angle_indicator = edge_circle_text.copy()
+        adjustment_angle_indicator = edge_circle_text.copy().set_background_stroke(color=WHITE, width=5)
         self.add(adjustment_angle_indicator)
         self.play(
-            adjustment_angle_indicator.animate.scale(0.6).move_to(adjustment_angle_arc).shift((0.2, 0.2, 0)),
+            adjustment_angle_indicator.animate.scale(0.6).move_to(adjustment_angle_arc).shift((0.25, 0.25, 0)),
             run_time=0.8
         )
         self.pause()
@@ -551,13 +573,13 @@ class MainScene(Scene):
         )
         self.wait(0.2)
 
-        tangent_vector_j_ghost = tangent_vector_j.copy()
+        tangent_vector_j_ghost = tangent_vector_j.copy().set_background_stroke(color=WHITE, width=5)
         tangent_vector_j_ghost.set_opacity(0.35)
         self.add(tangent_vector_j_ghost)
         adjustment_angle_arc_negative = Arc(0.85, displacement_angle + adjustment_angle_value, -adjustment_angle_value).set_color(BLUE)
         adjustment_angle_arc_negative.shift(pos_i)
         adjustment_angle_indicator_negative = Tex("$-x_{i \\to j}$").set_color(BLUE).scale(0.8 * 0.6)
-        adjustment_angle_indicator_negative.move_to(adjustment_angle_arc_negative).shift((0.2, 0.2, 0))
+        adjustment_angle_indicator_negative.move_to(adjustment_angle_arc_negative).shift((0.25, 0.25, 0))
         self.play(
             Create(adjustment_angle_arc_negative),
             Rotate(tangent_vector_j, -adjustment_angle_value, about_point=pos_i),
@@ -569,7 +591,7 @@ class MainScene(Scene):
     def animate_slide_equation_for_basis_cycle(self):
         self.next_slide()
         self.set_title("Our first equation")
-        self.add_bullet_point("- Goal: Zero defect on a cycle.", t2w={"Zero defect": BOLD})
+        self.add_bullet_point("- Goal: Zero defect on one cycle.", t2w={"one": BOLD})
         self.pause()
 
         v, e, f = self.generate_triangle_mesh([
@@ -607,6 +629,17 @@ class MainScene(Scene):
             edge_circles.append(edge_circle)
             edge_circle_texts.append(edge_circle_text)
 
+        path_arrows = []
+        for i in range(len(path_face_keys)):
+            fa, fb = f[path_face_keys[i]], f[path_face_keys[(i + 1) % len(path_face_keys)]]
+            arrow = Arrow(max_tip_length_to_length_ratio=0.12).set_color(BLUE).set_opacity(0.4).put_start_and_end_on(fa.get_center(), fb.get_center())
+            path_arrows.append(arrow)
+            self.play(
+                self.create_arrow(arrow),
+                run_time=0.2
+            )
+        self.pause()
+
         tangent_vectors = []
         angle = -np.pi / 2
         angle_delta = 0.04 * np.pi
@@ -627,17 +660,6 @@ class MainScene(Scene):
         self.add_foreground_mobject(tangent_vectors[0])
         self.pause()
 
-        path_arrows = []
-        for i in range(len(path_face_keys)):
-            fa, fb = f[path_face_keys[i]], f[path_face_keys[(i + 1) % len(path_face_keys)]]
-            arrow = Arrow(max_tip_length_to_length_ratio=0.12).set_color(BLUE).set_opacity(0.4).put_start_and_end_on(fa.get_center(), fb.get_center())
-            path_arrows.append(arrow)
-            self.play(
-                self.create_arrow(arrow),
-                run_time=0.25
-            )
-        self.pause()
-
         for i in range(1, len(tangent_vectors)):
             pos_i = f[path_face_keys[i - 1]].get_center()
             pos_j = f[path_face_keys[i % len(path_face_keys)]].get_center()
@@ -648,13 +670,15 @@ class MainScene(Scene):
                 run_time=0.2
             )
             self.add_foreground_mobject(tangent_vectors[i])
-        self.pause()
+        self.wait(0.3)
 
         animations = []
         for i in range(len(tangent_vectors)):
             vector = tangent_vectors[i]
             start, end = vector.get_start_and_end()
-            if i % 6 == 0:
+            if i == 0:
+                animations.append(vector.animate.put_start_and_end_on(start, start + (end - start) * 2).set_opacity(0.4))
+            elif i == 6:
                 animations.append(vector.animate.put_start_and_end_on(start, start + (end - start) * 2))
             else:
                 animations.append(vector.animate.put_start_and_end_on(start, start + (end - start) * 0.5).set_opacity(0.4))
@@ -764,7 +788,8 @@ class MainScene(Scene):
 
         self.next_slide()
         self.set_title("Supporting singularities")
-        self.add_bullet_point("- Define value k for each vertex.", t2c={"k": GREEN}, t2s={"k": ITALIC})
+        self.pause()
+
         intro_bunny_image.scale(0.5).to_corner(DOWN + LEFT)
         hairy_ball_image.scale(0.75).next_to(intro_bunny_image, RIGHT).align_to(intro_bunny_image, DOWN)
         self.add(intro_bunny_image)
@@ -779,17 +804,19 @@ class MainScene(Scene):
         k_value_text_1 = Tex("$k =~$", "$0$", color=GREEN).next_to(outline_rectangle, UP)
         k_value_text_2 = Tex("$k =~$", "$1$", color=GREEN).next_to(outline_rectangle, UP)
         k_value_text_3 = Tex("$k =~$", "$-1$", color=GREEN).next_to(outline_rectangle, UP)
+        k_value_text_4 = Tex("$k =~$", "$3$", color=GREEN).next_to(outline_rectangle, UP)
 
         tangent_vectors = []
-        interpolation_steps = 24
+        interpolation_steps = 48
         angle_delta = 2 * np.pi / interpolation_steps
         for i in range(interpolation_steps):
             pos_angle = -0.25 * np.pi + 2 * np.pi * (i / interpolation_steps)
             pos = middle_vertex.get_center() + 1.2 * np.array([np.cos(pos_angle), np.sin(pos_angle), 0])
-            tangent_vector = Arrow(max_tip_length_to_length_ratio=0.12).set_color(RED).put_start_and_end_on(pos, pos + 0.35 * (DOWN + RIGHT))
+            tangent_vector = Arrow(max_tip_length_to_length_ratio=0.06).set_color(RED).put_start_and_end_on(pos, pos + 0.35 * (DOWN + RIGHT))
             tangent_vector.rotate((np.random.random() - 0.5) * 0.2, about_point = tangent_vector.get_start())
             tangent_vectors.append(tangent_vector)
 
+        self.add_bullet_point("- Define value k for each vertex.", t2c={"k": GREEN}, t2s={"k": ITALIC})
         self.add(outline_rectangle)
         self.add(middle_vertex)
         self.add(k_text)
@@ -799,17 +826,14 @@ class MainScene(Scene):
             AnimationGroup(
                 *[self.create_arrow(j) for j in tangent_vectors],
                 run_time=1.2,
-                lag_ratio=0.02
+                lag_ratio=0.1
             ),
         )
         self.add_foreground_mobjects(*tangent_vectors)
         self.add_foreground_mobjects(middle_vertex, k_text)
         self.pause()
 
-        self.play(
-            Write(k_value_text_1),
-            run_time=0.8
-        )
+        self.add(k_value_text_1)
         self.pause()
 
         singularity_plus_one_image = self.load_image("singularity_plus_one")
@@ -844,6 +868,18 @@ class MainScene(Scene):
             FadeIn(singularity_minus_one_image, scale=0.2),
             *[j.animate.set_opacity(0.4) for j in tangent_vectors],
             run_time=0.6
+        )
+        self.pause()
+
+        self.play(
+            FadeOut(singularity_minus_one_image),
+            *[j.animate.set_opacity(1) for j in tangent_vectors],
+            run_time=0.4
+        )
+        self.play(
+            *[Rotate(tangent_vectors[j], 4 * angle_delta * j, about_point=tangent_vectors[j].get_start()) for j in range(len(tangent_vectors))],
+            Transform(k_value_text_3, k_value_text_4, replace_mobject_with_target_in_scene=True),
+            run_time=1.6
         )
         self.pause()
 
@@ -894,12 +930,6 @@ class MainScene(Scene):
             arrow = Arrow(max_tip_length_to_length_ratio=0.12).set_color(BLUE).put_start_and_end_on(pos_i, pos_j)
             path_1_arrows.append(arrow)
 
-        self.play(
-            FadeIn(Group(*path_1_arrows), scale=0.5),
-            run_time=0.6
-        )
-        self.pause()
-
         path_2 = [
             f[frozenset({(1, 0), (1, 1), (2, 1)})],
             f[frozenset({(1, 1), (2, 1), (2, 2)})],
@@ -917,8 +947,9 @@ class MainScene(Scene):
 
         left_arrow, right_arrow = path_1_arrows[4], path_2_arrows[1]
         right_arrow.shift(RIGHT * 0.1)
+        left_arrow.shift(LEFT * 0.1)
         self.play(
-            left_arrow.animate.shift(LEFT * 0.1),
+            FadeIn(Group(*path_1_arrows), scale=0.5),
             FadeIn(Group(*path_2_arrows), scale=0.5),
             run_time=0.6
         )
@@ -1009,12 +1040,10 @@ class MainScene(Scene):
 
         self.play(
             Rotate(tangent_vector_pos, 2 * np.pi, about_point=v[(1, 1)].get_center()),
-            rate_func=rush_into,
             run_time=1.2
         )
         self.play(
             Rotate(tangent_vector_pos, 2 * np.pi, about_point=v[(2, 1)].get_center()),
-            rate_func=rush_from,
             run_time=1.2
         )
         self.pause()
@@ -1051,6 +1080,7 @@ class MainScene(Scene):
         )
         self.pause()
 
+    def animate_slide_cycle_construction_demonstration(self):
         self.next_slide()
 
         v, e, f = self.generate_triangle_mesh([
@@ -1072,6 +1102,75 @@ class MainScene(Scene):
 
         self.add(mesh_group)
         self.pause()
+
+        def demonstrate_cycle(vertices, old_outer_arrows={}):
+            arrow_keys = []
+            for v_key in vertices:
+                x, y = v_key
+                boundary_vertex_keys = [
+                    (x - 1, y - 1),
+                    (x + 0, y - 1),
+                    (x + 1, y + 0),
+                    (x + 1, y + 1),
+                    (x + 0, y + 1),
+                    (x - 1, y + 0),
+                ]
+                face_keys = [frozenset([v_key, boundary_vertex_keys[j - 1], boundary_vertex_keys[j]]) for j in range(6)]
+                arrow_keys.extend([(v_key, face_keys[j - 1], face_keys[j]) for j in range(6)])
+
+            outer_arrows = {}
+            inner_arrows = set()
+            for arrow_key in arrow_keys:
+                pos_v, pos_fa, pos_fb = v[arrow_key[0]].get_center(), f[arrow_key[1]].get_center(), f[arrow_key[2]].get_center()
+                pos_fa = pos_fa + 0.05 * (pos_v - pos_fa)
+                pos_fb = pos_fb + 0.05 * (pos_v - pos_fb)
+                arrow = Arrow(max_tip_length_to_length_ratio=0.12).set_color(BLUE).put_start_and_end_on(pos_fa, pos_fb)
+
+                key = frozenset(arrow_key[1:])
+                if key in outer_arrows:
+                    inner_arrows.add(outer_arrows.pop(key))
+                    inner_arrows.add(arrow)
+                else:
+                    outer_arrows[key] = arrow
+            outer_arrows = set(outer_arrows.values())
+
+            self.play(
+                *[FadeOut(j) for j in old_outer_arrows],
+                *[self.create_arrow(j) for j in inner_arrows | outer_arrows],
+                run_time=0.4
+            )
+            self.wait(0.6)
+            
+            self.play(
+                *[j.animate.set_color(ORANGE) for j in inner_arrows],
+                run_time=0.4
+            )
+            self.wait(0.6)
+
+            self.play(
+                *[FadeOut(j) for j in inner_arrows],
+                run_time=0.4
+            )
+            self.pause()
+
+            return outer_arrows
+
+        outer_arrows = demonstrate_cycle(
+            [(4, 3), (4, 2), (5, 2)]
+        )
+        
+        outer_arrows = demonstrate_cycle(
+            [(3, 4), (3, 3), (3, 2), (3, 1), (4, 2), (5, 3), (6, 4), (6, 3), (6, 2), (6, 1)],
+            outer_arrows
+        )
+
+        outer_arrows = demonstrate_cycle(
+            [(j, 1) for j in range(3, 6)] +
+            [(j, 2) for j in range(2, 6)] + [(7, 2)] +
+            [(j, 3) for j in range(3, 8)] +
+            [(j, 4) for j in range(4, 6)],
+            outer_arrows
+        )
 
     def animate_slide_explain_noncontractible_cycles(self):
         self.next_slide()
@@ -1163,16 +1262,19 @@ class MainScene(Scene):
         self.animate_slide_levi_civita_connection()
         self.animate_slide_problem_with_curved_surface()
 
-        self.animate_slide_goal_is_zero_defect()
+        self.animate_slide_paper_contribution()
 
         self.animate_slide_adjustment_angles()
         self.animate_slide_equation_for_basis_cycle()
         self.animate_slide_basis_cycle_with_singularities()
         self.animate_slide_adding_basis_cycles()
+        self.animate_slide_cycle_construction_demonstration()
         self.animate_slide_explain_noncontractible_cycles()
 
         self.animate_slide_matrix_equation()
         # self.animate_slide_constructing_field()
+
+        # self.animate_slide_implementation_plan()
 
         self.animate_slide_intro_outro()
 

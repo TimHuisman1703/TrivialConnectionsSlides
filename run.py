@@ -30,6 +30,7 @@ for cap_filename in cap_filenames:
         if ret == False:
             break
         curr_frames.append(frame)
+    cap.release()
 
     frames.append(curr_frames)
 
