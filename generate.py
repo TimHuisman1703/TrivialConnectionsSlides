@@ -3,7 +3,7 @@ import numpy as np
 import os
 import shutil
 
-HIGH_QUALITY = False
+HIGH_QUALITY = True
 
 BLACK = "#000000"
 DARK_GREY = "#3F3F3F"
@@ -406,12 +406,6 @@ class MainScene(Scene):
         defect_arc_left.shift(pos_left_2_3)
         defect_arc_text_left = Tex("$\\delta$", color=RED).set_background_stroke(color=WHITE, width=5)
         defect_arc_text_left.scale(0.8).move_to(defect_arc_left).shift((-0.2, 0.4, 0))
-        self.play(
-            Create(defect_arc_left),
-            FadeIn(defect_arc_text_left),
-            run_time=0.8
-        )
-        self.pause()
 
         arrow_origin = middle_point + DOWN * 0.5
         angle_right = 0.23 * np.pi
@@ -421,12 +415,12 @@ class MainScene(Scene):
         defect_arc_right.shift(arrow_origin)
         defect_arc_text_right = Tex("$\\delta$", color=RED)
         defect_arc_text_right.scale(0.8).move_to(defect_arc_right).shift((0, -0.3, 0))
+
         self.play(
+            Create(defect_arc_left),
+            FadeIn(defect_arc_text_left),
             self.create_arrow(defect_arrow_right_1),
             self.create_arrow(defect_arrow_right_2),
-            run_time=0.4
-        )
-        self.play(
             Create(defect_arc_right),
             FadeIn(defect_arc_text_right),
             run_time=0.6
@@ -436,7 +430,7 @@ class MainScene(Scene):
         self.add_bullet_point("- Defects (δ) lead to path dependence.", t2c={"defect": RED, "δ": RED}, t2s={"path dependence": ITALIC})
         self.pause()
 
-        self.add_bullet_point("- Goal: Zero defect on all cycles.", t2c={"defect": RED}, t2w={"Zero defect": BOLD, "all cycles": BOLD})
+        self.add_bullet_point("- Goal: Zero defect on all cycles.", t2w={"Zero defect": BOLD, "all cycles": BOLD})
         self.pause()
 
     def animate_slide_paper_contribution(self):
@@ -1140,7 +1134,7 @@ class MainScene(Scene):
                 run_time=0.4
             )
             self.wait(0.6)
-            
+
             self.play(
                 *[j.animate.set_color(ORANGE) for j in inner_arrows],
                 run_time=0.4
@@ -1151,19 +1145,17 @@ class MainScene(Scene):
                 *[FadeOut(j) for j in inner_arrows],
                 run_time=0.4
             )
-            self.pause()
+            self.wait(0.8)
 
             return outer_arrows
 
         outer_arrows = demonstrate_cycle(
             [(4, 3), (4, 2), (5, 2)]
         )
-        
         outer_arrows = demonstrate_cycle(
             [(3, 4), (3, 3), (3, 2), (3, 1), (4, 2), (5, 3), (6, 4), (6, 3), (6, 2), (6, 1)],
             outer_arrows
         )
-
         outer_arrows = demonstrate_cycle(
             [(j, 1) for j in range(3, 6)] +
             [(j, 2) for j in range(2, 6)] + [(7, 2)] +
@@ -1171,6 +1163,7 @@ class MainScene(Scene):
             [(j, 4) for j in range(4, 6)],
             outer_arrows
         )
+        self.pause()
 
     def animate_slide_explain_noncontractible_cycles(self):
         self.next_slide()
