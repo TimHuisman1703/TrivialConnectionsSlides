@@ -35,7 +35,7 @@ def render_slides(high_quality=True):
         width, height = 1920, 1080
 
     filename = os.path.realpath(__file__)
-    src_directory = f"{DIRECTORY}/media/videos/generate/{height}p{framerate}/partial_movie_files/MainScene"
+    src_directory = f"{DIRECTORY}/media/videos/render/{height}p{framerate}/partial_movie_files/MainScene"
 
     if os.path.exists(DST_DIRECTORY):
         shutil.rmtree(DST_DIRECTORY)
@@ -252,6 +252,7 @@ class MainScene(Scene):
         icosahedron_image = self.load_image("icosahedron")
         icosahedron_image.shift(1.5 * DOWN)
         self.add(icosahedron_image)
+        self.add_bullet_point("- Discrete surface (mesh of triangles).", t2c={"Discrete surface": ICO_BLUE, "triangles": ICO_BLUE})
         self.pause()
 
         self.add(tangent_vectors[0])
@@ -1209,6 +1210,10 @@ class MainScene(Scene):
         linear_equations = []
         for iy in range(12):
             linear_equation = []
+            random_indices = set()
+            while len(random_indices) < 6:
+                random_indices.add(np.random.randint(1, 100))
+            random_indices = [*random_indices]
             for ix in range(17):
                 if ix == 13 or ix == 15:
                     continue
@@ -1222,7 +1227,7 @@ class MainScene(Scene):
                 elif ix % 2:
                     tex = Tex("$+$" if np.random.random() < 0.6 else "$-$")
                 else:
-                    idx = np.random.randint(1, 100) if HIGH_QUALITY else 42
+                    idx = random_indices.pop()
                     tex = Tex(f"$x_{{e_{{{idx}}}}}$")
                 tex.set_color(BLACK)
                 tex.scale(0.8).shift((-5.6 + 0.7 * ix, 3.5 - 0.73 * iy, 0))
@@ -1503,6 +1508,17 @@ class MainScene(Scene):
         self.add_bullet_point("  on Geometry Processing 2010)").shift(UP * 0.12)
         self.pause()
 
+    def animate_slide_implementation_plan(self):
+        self.next_slide()
+        how_text = Text("WHAT NOW?", color=BLACK, weight=BOLD).scale(2)
+        self.add(how_text)
+        self.pause()
+
+        self.next_slide()
+        self.set_title("Implementation Plan")
+        self.add_bullet_point("- TODO", color=RED)
+        self.pause()
+
     ###################################
     #                                 #
     #            STRUCTURE            #
@@ -1510,29 +1526,29 @@ class MainScene(Scene):
     ###################################
 
     def animate(self):
-        # self.animate_slide_intro_outro()
-        # self.animate_slide_problem_description()
-        # self.animate_slide_relevance()
+        self.animate_slide_intro_outro()
+        self.animate_slide_problem_description()
+        self.animate_slide_relevance()
 
-        # self.animate_slide_representation()
-        # self.animate_slide_levi_civita_connection()
-        # self.animate_slide_problem_with_curved_surface()
+        self.animate_slide_representation()
+        self.animate_slide_levi_civita_connection()
+        self.animate_slide_problem_with_curved_surface()
 
-        # self.animate_slide_paper_contribution()
+        self.animate_slide_paper_contribution()
 
-        # self.animate_slide_adjustment_angles()
-        # self.animate_slide_equation_for_basis_cycle()
-        # self.animate_slide_basis_cycle_with_singularities()
-        # self.animate_slide_adding_basis_cycles()
-        # self.animate_slide_cycle_construction_demonstration()
-        # self.animate_slide_explain_noncontractible_cycles()
+        self.animate_slide_adjustment_angles()
+        self.animate_slide_equation_for_basis_cycle()
+        self.animate_slide_basis_cycle_with_singularities()
+        self.animate_slide_adding_basis_cycles()
+        self.animate_slide_cycle_construction_demonstration()
+        self.animate_slide_explain_noncontractible_cycles()
 
-        # self.animate_slide_matrix_equation()
-        # self.animate_slide_constructing_field()
+        self.animate_slide_matrix_equation()
+        self.animate_slide_constructing_field()
         self.animate_slide_extensions()
 
-        # self.animate_slide_evaluation()
-        # self.animate_slide_implementation_plan()
+        self.animate_slide_evaluation()
+        self.animate_slide_implementation_plan()
 
         self.animate_slide_intro_outro()
 
