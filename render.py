@@ -252,14 +252,14 @@ class MainScene(Scene):
         icosahedron_image = self.load_image("icosahedron")
         icosahedron_image.shift(1.5 * DOWN)
         self.add(icosahedron_image)
-        self.add_bullet_point("- Discrete surface (mesh of triangles).", t2c={"Discrete surface": ICO_BLUE, "triangles": ICO_BLUE})
+        self.add_bullet_point("- Discrete surface (mesh of triangles).", t2c={"triangles": ICO_BLUE})
         self.pause()
 
         self.add(tangent_vectors[0])
         self.add_bullet_point("- One tangent vector per triangle.", t2c={"tangent vector": RED, "triangle": ICO_BLUE})
         self.pause()
 
-        self.add_bullet_point("- All tangent vectors form a vector field.", t2c={"tangent vectors": RED, "vector field": ORANGE})
+        self.add_bullet_point("- All tangent vectors form a vector field.", t2c={"tangent vectors": RED}, t2s={"vector field": ITALIC})
         self.add(*tangent_vectors[1:])
         self.pause()
 
@@ -436,9 +436,9 @@ class MainScene(Scene):
         self.set_title("Contribution")
 
         intro_bunny_image = self.load_image("intro_bunny")
-        intro_bunny_image.shift(3.6 * RIGHT)
+        intro_bunny_image.shift(3.6 * RIGHT + DOWN)
         self.add(intro_bunny_image)
-        self.add_bullet_point("- Algorithm for enforcing zero-defect cycles.")
+        self.add_bullet_point("- Algorithm for enforcing zero-defect cycles (\"trivial connections\").", t2w={"trivial connections": BOLD})
         self.pause()
 
         self.add_bullet_point("  - Efficient;")
@@ -584,7 +584,7 @@ class MainScene(Scene):
 
     def animate_slide_equation_for_basis_cycle(self):
         self.next_slide()
-        self.set_title("Our first equation")
+        self.set_title("Simple approach")
         self.add_bullet_point("- Goal: Zero defect on one cycle.", t2w={"one": BOLD})
         self.pause()
 
@@ -749,7 +749,7 @@ class MainScene(Scene):
         self.pause()
 
         self.next_slide()
-        poincare_hopf_theorem_text = Text("Poincaré-Hopf Theorem", color=BLACK).scale(1.2).shift(2.5 * UP)
+        poincare_hopf_theorem_text = Text("Poincaré-Hopf Theorem", color=BLACK).scale(1.5).shift(2.5 * UP)
         equation_tex = Tex("$\\sum_v k_v$", "$~=~$", "$\\chi(M)$", "$~=~$", "$|V| - |E| + |F|$", color=DARK_GREY)
         equation_tex.set_color_by_tex("\\sum", GREEN)
         equation_tex.set_color_by_tex("\\chi", RED)
@@ -772,7 +772,7 @@ class MainScene(Scene):
         self.pause()
 
         self.next_slide()
-        hairy_ball_theorem_text = Text("Hairy Ball Theorem", color=BLACK).scale(1.2).shift(2.5 * UP)
+        hairy_ball_theorem_text = Text("Hairy Ball Theorem", color=BLACK).scale(1.5).shift(2.5 * UP)
         hairy_ball_image = self.load_image("hairy_ball").scale(2)
         coconut_text = Text("\"You can't comb the hair on a coconut.\"", color=DARK_GREY, slant=ITALIC).shift(2.5 * DOWN)
         self.add(hairy_ball_theorem_text)
@@ -791,13 +791,13 @@ class MainScene(Scene):
 
         middle_vertex = Circle(0.24).set_stroke(opacity=0).set_fill(GREEN, opacity=1)
         middle_vertex.move_to(3 * RIGHT)
-        k_text = Tex("$k$", color=WHITE).scale(0.8).move_to(middle_vertex)
+        k_text = Tex("$k_v$", color=WHITE).scale(0.8).move_to(middle_vertex)
         outline_rectangle = Rectangle(WHITE, 4, 4).set_stroke(LIGHT_GREY, width=3).set_fill(opacity=0)
         outline_rectangle.move_to(middle_vertex)
-        k_value_text_1 = Tex("$k =~$", "$0$", color=GREEN).next_to(outline_rectangle, UP)
-        k_value_text_2 = Tex("$k =~$", "$1$", color=GREEN).next_to(outline_rectangle, UP)
-        k_value_text_3 = Tex("$k =~$", "$-1$", color=GREEN).next_to(outline_rectangle, UP)
-        k_value_text_4 = Tex("$k =~$", "$3$", color=GREEN).next_to(outline_rectangle, UP)
+        k_value_text_1 = Tex("$k_v =~$", "$0$", color=GREEN).next_to(outline_rectangle, UP)
+        k_value_text_2 = Tex("$k_v =~$", "$1$", color=GREEN).next_to(outline_rectangle, UP)
+        k_value_text_3 = Tex("$k_v =~$", "$-1$", color=GREEN).next_to(outline_rectangle, UP)
+        k_value_text_4 = Tex("$k_v =~$", "$3$", color=GREEN).next_to(outline_rectangle, UP)
 
         tangent_vectors = []
         interpolation_steps = 48
@@ -809,10 +809,14 @@ class MainScene(Scene):
             tangent_vector.rotate((np.random.random() - 0.5) * 0.2, about_point = tangent_vector.get_start())
             tangent_vectors.append(tangent_vector)
 
-        self.add_bullet_point("- Define value k for each vertex.", t2c={"k": GREEN}, t2s={"k": ITALIC})
+        self.add_bullet_point("- User defines singular index", t2c={"singular index": GREEN}, t2s={"singular index": ITALIC})
+        self.add_bullet_point("  for each vertex.").shift(UP * 0.12)
         self.add(outline_rectangle)
         self.add(middle_vertex)
         self.add(k_text)
+        self.pause()
+
+        self.add(k_value_text_1)
         self.pause()
 
         self.play(
@@ -824,9 +828,6 @@ class MainScene(Scene):
         )
         self.add_foreground_mobjects(*tangent_vectors)
         self.add_foreground_mobjects(middle_vertex, k_text)
-        self.pause()
-
-        self.add(k_value_text_1)
         self.pause()
 
         singularity_plus_one_image = self.load_image("singularity_plus_one")
@@ -880,7 +881,7 @@ class MainScene(Scene):
         linear_formula_tex.set_color_by_tex("x", BLUE)
         linear_formula_tex.set_color_by_tex("\\delta", RED)
         linear_formula_tex.set_color_by_tex("k", GREEN)
-        linear_formula_tex.move_to(self.next_bullet_point_pos, LEFT + UP).shift((0.3, -0.8, 0))
+        linear_formula_tex.move_to(self.next_bullet_point_pos, LEFT + UP).shift((0.3, -0.4, 0))
         self.add(linear_formula_tex[:-1])
         self.pause()
 
@@ -1173,7 +1174,7 @@ class MainScene(Scene):
 
     def animate_slide_explain_noncontractible_cycles(self):
         self.next_slide()
-        self.set_title("Almost there...")
+        self.set_title("A few more cycles")
         self.add_bullet_point("- Have we covered all cycles?")
         self.pause()
 
@@ -1270,6 +1271,12 @@ class MainScene(Scene):
 
     def animate_slide_constructing_field(self):
         self.next_slide()
+        self.set_title("Almost there...")
+        bullet_point_1 = self.add_bullet_point("- We have all adjustment angles!", t2c={"adjustment angles": BLUE})
+        self.pause()
+
+        bullet_point_2 = self.add_bullet_point("- Now construct the vector field...", t2c={"vector field": RED})
+        self.pause()
 
         v, e, f = self.generate_triangle_mesh([
             [*range(10)] for _ in range(6)
@@ -1277,20 +1284,20 @@ class MainScene(Scene):
         mesh_group = Group(*f.values(), *e.values(), *v.values())
         mesh_group.move_to(ORIGIN)
 
-        self.add(mesh_group)
+        self.play(
+            FadeIn(mesh_group, scale=1.2),
+            FadeOut(bullet_point_1, shift=UP),
+            FadeOut(bullet_point_2, shift=UP),
+            FadeOut(self.title, shift=UP),
+            run_time=0.8
+        )
         self.pause()
 
         edge_circles = []
         for edge in e.values():
-            edge_circle = Circle(0.1).set_stroke(LIGHT_GRAY, opacity=1, width=3).set_fill(WHITE, opacity=1)
+            edge_circle = Circle(0.1).set_stroke(BLUE, opacity=1, width=3).set_fill(WHITE, opacity=1)
             edge_circle.move_to(edge)
             edge_circles.append(edge_circle)
-
-        self.play(
-            *[FadeIn(j, scale=3) for j in edge_circles],
-            run_time=0.6
-        )
-        self.pause()
 
         start_face_key = frozenset([(2, 3), (3, 3), (3, 4)])
         end_face_key = frozenset([(6, 1), (6, 2), (7, 2)])
@@ -1329,7 +1336,6 @@ class MainScene(Scene):
             tangent_vectors[f_key] = tangent_vector
 
         self.add_foreground_mobjects(*v.values())
-        self.add_foreground_mobjects(*edge_circles)
         tangent_vectors[start_face_key].z_index = 100
         self.play(
             *triangle_animations,
@@ -1337,7 +1343,12 @@ class MainScene(Scene):
             run_time=0.6
         )
         self.remove_foreground_mobjects(*v.values())
-        self.remove_foreground_mobjects(*edge_circles)
+        self.pause()
+
+        self.play(
+            *[FadeIn(j, scale=3) for j in edge_circles],
+            run_time=0.6
+        )
         self.pause()
 
         paths = [
@@ -1348,6 +1359,9 @@ class MainScene(Scene):
         travelling_vectors = [tangent_vectors[start_face_key].copy().set_opacity(0.6) for _ in paths]
         for t in range(len(paths[0])):
             move_animations = []
+            if t == 0:
+                move_animations = [j.animate.set_stroke(LIGHT_GREY, opacity=1, width=3) for j in edge_circles]
+
             for i in range(len(paths)):
                 v = paths[i][t]
                 if v > 0:
@@ -1435,8 +1449,8 @@ class MainScene(Scene):
         self.pause()
 
         header_text_1 = Text("Edge weights", color=BLACK).shift((-width / 3, 3, 0))
-        header_text_2 = Text("Boundaries", color=BLACK).shift((0, 3, 0))
-        header_text_3 = Text("Directional\nconstraints", color=BLACK).shift((width / 3, 3, 0))
+        header_text_2 = Text("Directional\nconstraints", color=BLACK).shift((0, 3, 0))
+        header_text_3 = Text("Fractional\nsingular\nindices", color=BLACK, t2s={"Fractional": ITALIC}).shift((width / 3, 3, 0)).align_to(header_text_2, UP)
 
         self.add(header_text_1)
         edge_weight_visual_image = self.load_image("edge_weight_visual").scale(1.2)
@@ -1458,26 +1472,48 @@ class MainScene(Scene):
         self.pause()
 
         self.add(header_text_2)
-        boundary_field_1_image = self.load_image("boundary_field_1").scale(0.65)
-        boundary_field_1_image.shift((0, 1, 0))
-        boundary_field_2_image = self.load_image("boundary_field_2").scale(0.65)
-        boundary_field_2_image.shift((0, -2.1, 0))
-        self.add(boundary_field_1_image)
-        self.add(boundary_field_2_image)
-        self.pause()
-
-        self.add(header_text_3)
         directional_constraints_example_image = self.load_image("directional_constraints_example").scale(0.65)
-        directional_constraints_example_image.shift((width / 3, 0.9, 0))
+        directional_constraints_example_image.shift((0, 0.9, 0))
         directional_constraints_zoom_image = self.load_image("directional_constraints_zoom").scale(1.35)
-        directional_constraints_zoom_image.shift((width / 3 + 1.35, 0.3, 0))
+        directional_constraints_zoom_image.shift((1.35, 0.3, 0))
+        directional_constraints_zoom_stroke = Rectangle(DARK_GREY, directional_constraints_zoom_image.height, directional_constraints_zoom_image.width)
+        directional_constraints_zoom_stroke.move_to(directional_constraints_zoom_image)
         self.add(directional_constraints_example_image)
         self.add(directional_constraints_zoom_image)
+        self.add(directional_constraints_zoom_stroke)
         self.pause()
 
         directional_constraints_tree_image = self.load_image("directional_constraints_tree").scale(0.8)
-        directional_constraints_tree_image.shift((width / 3, -2.1, 0))
+        directional_constraints_tree_image.shift((0, -2.1, 0))
         self.add(directional_constraints_tree_image)
+        self.pause()
+
+        self.add(header_text_3)
+        self.pause()
+
+        intro_bunny_image = self.load_image("intro_bunny").scale(0.8)
+        intro_bunny_image.shift((width / 3, -1.6, 0))
+        self.add(intro_bunny_image)
+        self.pause()
+
+        bunny_singularity_1_image = self.load_image("bunny_singularity_1").scale(1.2)
+        bunny_singularity_1_image.shift((width / 3 - 1.2, 0.8, 0))
+        bunny_singularity_1_stroke = Rectangle(DARK_GREY, bunny_singularity_1_image.height, bunny_singularity_1_image.width)
+        bunny_singularity_1_stroke.move_to(bunny_singularity_1_image)
+        bunny_singularity_2_image = self.load_image("bunny_singularity_2").scale(1.2)
+        bunny_singularity_2_image.shift((width / 3, 0.8, 0))
+        bunny_singularity_2_stroke = Rectangle(DARK_GREY, bunny_singularity_2_image.height, bunny_singularity_2_image.width)
+        bunny_singularity_2_stroke.move_to(bunny_singularity_2_image)
+        bunny_singularity_3_image = self.load_image("bunny_singularity_3").scale(1.2)
+        bunny_singularity_3_image.shift((width / 3 + 1.2, 0.8, 0))
+        bunny_singularity_3_stroke = Rectangle(DARK_GREY, bunny_singularity_3_image.height, bunny_singularity_3_image.width)
+        bunny_singularity_3_stroke.move_to(bunny_singularity_3_image)
+        self.add(bunny_singularity_1_image)
+        self.add(bunny_singularity_1_stroke)
+        self.add(bunny_singularity_2_image)
+        self.add(bunny_singularity_2_stroke)
+        self.add(bunny_singularity_3_image)
+        self.add(bunny_singularity_3_stroke)
         self.pause()
 
     def animate_slide_evaluation(self):
@@ -1556,5 +1592,3 @@ if __name__ == "__main__":
     render_slides(HIGH_QUALITY)
 
     import run
-
-# TODO: explain what a "trivial connection" is
