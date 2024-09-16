@@ -427,7 +427,7 @@ class MainScene(Scene):
         self.add_bullet_point("- Defects (δ) lead to path dependence.", t2c={"defect": RED, "δ": RED}, t2s={"path dependence": ITALIC})
         self.pause()
 
-        self.add_bullet_point("- Goal: Zero defect on all cycles.", t2w={"Zero defect": BOLD, "all cycles": BOLD})
+        self.add_bullet_point("- Goal: No defect on any cycle.", t2w={"No defect": BOLD, "any cycle": BOLD})
         self.pause()
 
     def animate_slide_paper_contribution(self):
@@ -437,8 +437,6 @@ class MainScene(Scene):
         intro_bunny_image = self.load_image("intro_bunny")
         intro_bunny_image.shift(3.6 * RIGHT)
         self.add(intro_bunny_image)
-        self.pause()
-
         self.add_bullet_point("- Algorithm for enforcing zero-defect cycles.")
         self.pause()
 
@@ -487,9 +485,9 @@ class MainScene(Scene):
             Group(*v.values(), *f.values()).animate.scale(2).move_to(ORIGIN),
             run_time=1.2
         )
-        self.pause()
+        self.wait(0.2)
 
-        displacement = np.array([0.6, 0.45, 0])
+        displacement = np.array([1.0, 0.75, 0])
         pos_i = f[frozenset({(0, 0), (0, 1), (1, 1)})].get_center()
         pos_j = f[frozenset({(1, 2), (0, 1), (1, 1)})].get_center()
         tangent_vector_i = Arrow(max_tip_length_to_length_ratio=0.12).set_color(RED).put_start_and_end_on(pos_i, pos_i + displacement)
@@ -533,7 +531,7 @@ class MainScene(Scene):
 
         displacement_angle = np.arctan(displacement[1] / displacement[0])
         adjustment_angle_value = 0.35 * np.pi
-        adjustment_angle_arc = Arc(0.85, displacement_angle, adjustment_angle_value).set_color(BLUE)
+        adjustment_angle_arc = Arc(1.35, displacement_angle, adjustment_angle_value).set_color(BLUE)
         adjustment_angle_arc.shift(pos_j)
         self.play(
             Create(adjustment_angle_arc),
@@ -545,7 +543,7 @@ class MainScene(Scene):
         adjustment_angle_indicator = edge_circle_text.copy().set_background_stroke(color=WHITE, width=5)
         self.add(adjustment_angle_indicator)
         self.play(
-            adjustment_angle_indicator.animate.scale(0.6).move_to(adjustment_angle_arc).shift((0.25, 0.25, 0)),
+            adjustment_angle_indicator.animate.scale(0.6).move_to(adjustment_angle_arc).shift((0.25, 0.3, 0)),
             run_time=0.8
         )
         self.pause()
@@ -554,9 +552,8 @@ class MainScene(Scene):
         self.add(adjustment_angle_text)
         self.pause()
 
-        opposite_adjustment_angle_formula_text = Tex("$x_{j \\to i}$", "$ = $", "$-$", "$x_{i \\to j}$", color=BLACK)
+        opposite_adjustment_angle_formula_text = Tex("$x_{j \\to i}$", "$~= -$", "$x_{i \\to j}$", color=BLACK)
         opposite_adjustment_angle_formula_text.set_color_by_tex("x", BLUE)
-        opposite_adjustment_angle_formula_text.set_color_by_tex("-", RED)
         opposite_adjustment_angle_formula_text.scale(1.5).to_edge(DOWN).shift(UP * 0.2)
         self.add(opposite_adjustment_angle_formula_text)
         self.pause()
@@ -572,10 +569,10 @@ class MainScene(Scene):
         tangent_vector_j_ghost = tangent_vector_j.copy().set_background_stroke(color=WHITE, width=5)
         tangent_vector_j_ghost.set_opacity(0.35)
         self.add(tangent_vector_j_ghost)
-        adjustment_angle_arc_negative = Arc(0.85, displacement_angle + adjustment_angle_value, -adjustment_angle_value).set_color(BLUE)
+        adjustment_angle_arc_negative = Arc(1.35, displacement_angle + adjustment_angle_value, -adjustment_angle_value).set_color(BLUE)
         adjustment_angle_arc_negative.shift(pos_i)
         adjustment_angle_indicator_negative = Tex("$-x_{i \\to j}$").set_color(BLUE).scale(0.8 * 0.6)
-        adjustment_angle_indicator_negative.move_to(adjustment_angle_arc_negative).shift((0.25, 0.25, 0))
+        adjustment_angle_indicator_negative.move_to(adjustment_angle_arc_negative).shift((0.25, 0.3, 0))
         self.play(
             Create(adjustment_angle_arc_negative),
             Rotate(tangent_vector_j, -adjustment_angle_value, about_point=pos_i),
@@ -597,9 +594,6 @@ class MainScene(Scene):
         ], spacing=2)
         mesh_group = Group(*f.values(), *e.values(), *v.values())
         mesh_group.move_to(3 * RIGHT)
-
-        self.add(mesh_group)
-        self.pause()
 
         path_face_keys = [
             frozenset({(1, 1), (1, 2), (2, 2)}),
@@ -624,6 +618,9 @@ class MainScene(Scene):
 
             edge_circles.append(edge_circle)
             edge_circle_texts.append(edge_circle_text)
+
+        self.add(mesh_group)
+        self.wait(0.4)
 
         path_arrows = []
         for i in range(len(path_face_keys)):
@@ -1275,19 +1272,6 @@ class MainScene(Scene):
         mesh_group = Group(*f.values(), *e.values(), *v.values())
         mesh_group.move_to(ORIGIN)
 
-        singularity_vertices = {
-            (1, 1): 1,
-            (6, 3): -2,
-            (4, 4): -1,
-        }
-        k_texts = []
-        for key, value in singularity_vertices.items():
-            vertex = v[key]
-            vertex.scale(3).set_fill_color(GREEN)
-            k_text = Tex(f"${value}$", color=WHITE).scale(0.6).move_to(vertex)
-            mesh_group.add(k_text)
-            k_texts.append(k_text)
-
         self.add(mesh_group)
         self.pause()
 
@@ -1306,10 +1290,6 @@ class MainScene(Scene):
         start_face_key = frozenset([(2, 3), (3, 3), (3, 4)])
         end_face_key = frozenset([(6, 1), (6, 2), (7, 2)])
 
-        self.add_foreground_mobjects(*v.values())
-        self.add_foreground_mobjects(*edge_circles)
-        self.add_foreground_mobjects(*k_texts)
-
         triangle_animations = []
         new_edges = []
         for face_key in [start_face_key, end_face_key]:
@@ -1325,19 +1305,10 @@ class MainScene(Scene):
             triangle_animations.append(
                 FadeIn(Group(*curr_new_edges), scale=0.5)
             )
-        self.play(
-            *triangle_animations,
-            run_time=0.6
-        )
-        self.pause()
-
-        self.remove_foreground_mobjects(*v.values())
-        self.remove_foreground_mobjects(*edge_circles)
-        self.remove_foreground_mobjects(*k_texts)
 
         def get_direction(pos):
             x, y, _ = pos
-            dir = np.array([np.exp(0.2 * x), -0.4 * y + 1.5, 0])
+            dir = np.array([np.exp(0.15 * x), -0.4 * y + 1.5, 0])
             dir *= 0.9 / np.linalg.norm(dir)
             return dir
 
@@ -1352,10 +1323,16 @@ class MainScene(Scene):
             tangent_vector = Arrow(max_tip_length_to_length_ratio=0.12).set_color(RED).put_start_and_end_on(pos, pos + dir)
             tangent_vectors[f_key] = tangent_vector
 
+        self.add_foreground_mobjects(*v.values())
+        self.add_foreground_mobjects(*edge_circles)
+        tangent_vectors[start_face_key].z_index = 100
         self.play(
+            *triangle_animations,
             self.create_arrow(tangent_vectors[start_face_key]),
             run_time=0.6
         )
+        self.remove_foreground_mobjects(*v.values())
+        self.remove_foreground_mobjects(*edge_circles)
         self.pause()
 
         paths = [
@@ -1406,10 +1383,10 @@ class MainScene(Scene):
                 for face_key_j in neighbors[face_key_i]:
                     if face_key_j not in seen and face_key_j not in come_from:
                         come_from[face_key_j] = face_key_i
-            
+
             if not come_from:
                 break
-            
+
             animations = []
             for face_key_j, face_key_i in come_from.items():
                 vector_i = tangent_vectors[face_key_i]
@@ -1428,6 +1405,74 @@ class MainScene(Scene):
 
             seen |= set(come_from.keys())
             q = [*come_from.keys()]
+            np.random.shuffle(q)
+        self.pause()
+
+        tangent_vectors[start_face_key].z_index = 0
+        mask_rectangle = Square(100).set_fill(WHITE, opacity=0.7)
+        intro_bunny_transparent_image = self.load_image("intro_bunny_transparent").scale(1.6)
+        self.play(
+            FadeIn(mask_rectangle),
+            FadeIn(intro_bunny_transparent_image, shift=UP),
+            run_time=0.8,
+            rate_func=rush_from
+        )
+        self.pause()
+
+    def animate_slide_extensions(self):
+        self.next_slide()
+
+        width = 8.0 * 1920 / 1080
+        line_1 = Line((-width / 6, -5, 0), (-width / 6, 5, 0)).set_stroke(color=GREY, width=6)
+        line_2 = Line((width / 6, 5, 0), (width / 6, -5, 0)).set_stroke(color=GREY, width=6)
+        self.add(line_1)
+        self.add(line_2)
+        self.pause()
+
+        header_text_1 = Text("Edge weights", color=BLACK).shift((-width / 3, 3, 0))
+        header_text_2 = Text("Boundaries", color=BLACK).shift((0, 3, 0))
+        header_text_3 = Text("Directional\nconstraints", color=BLACK).shift((width / 3, 3, 0))
+
+        self.add(header_text_1)
+        edge_weight_visual_image = self.load_image("edge_weight_visual").scale(1.2)
+        edge_weight_visual_image.shift((-width / 3, 1.2, 0))
+        self.add(edge_weight_visual_image)
+        self.pause()
+
+        dkk_definition_tex = Tex("$D_{kk}$", "$~= \\sqrt{2 (\\cot \\phi_i + \\cot \\phi_j)^{-1}}$", color=BLACK).scale(0.65)
+        dkk_definition_tex.set_color_by_tex("D", GREEN)
+        dkk_definition_tex.shift((-width / 3, -1.2, 0))
+        minimiziation_formula_tex = Tex("$\\textbf{min} \\, ||$", "$D$", "$\\textbf{x}||_2$", color=BLACK).scale(0.8)
+        minimiziation_formula_tex.set_color_by_tex("D", GREEN)
+        minimiziation_formula_tex.shift((-width / 3, -2.1, 0))
+        matrix_formula_tex = Tex("$A$", "$\\textbf{x}$", "$~=~$", "$\\textbf{b}$", color=BLACK).scale(0.8)
+        matrix_formula_tex.shift((-width / 3, -2.7, 0))
+        self.add(dkk_definition_tex)
+        self.add(matrix_formula_tex)
+        self.add(minimiziation_formula_tex)
+        self.pause()
+
+        self.add(header_text_2)
+        boundary_field_1_image = self.load_image("boundary_field_1").scale(0.65)
+        boundary_field_1_image.shift((0, 1, 0))
+        boundary_field_2_image = self.load_image("boundary_field_2").scale(0.65)
+        boundary_field_2_image.shift((0, -2.1, 0))
+        self.add(boundary_field_1_image)
+        self.add(boundary_field_2_image)
+        self.pause()
+
+        self.add(header_text_3)
+        directional_constraints_example_image = self.load_image("directional_constraints_example").scale(0.65)
+        directional_constraints_example_image.shift((width / 3, 0.9, 0))
+        directional_constraints_zoom_image = self.load_image("directional_constraints_zoom").scale(1.35)
+        directional_constraints_zoom_image.shift((width / 3 + 1.35, 0.3, 0))
+        self.add(directional_constraints_example_image)
+        self.add(directional_constraints_zoom_image)
+        self.pause()
+
+        directional_constraints_tree_image = self.load_image("directional_constraints_tree").scale(0.8)
+        directional_constraints_tree_image.shift((width / 3, -2.1, 0))
+        self.add(directional_constraints_tree_image)
         self.pause()
 
     def animate_slide_evaluation(self):
@@ -1483,7 +1528,8 @@ class MainScene(Scene):
         # self.animate_slide_explain_noncontractible_cycles()
 
         # self.animate_slide_matrix_equation()
-        self.animate_slide_constructing_field()
+        # self.animate_slide_constructing_field()
+        self.animate_slide_extensions()
 
         # self.animate_slide_evaluation()
         # self.animate_slide_implementation_plan()
