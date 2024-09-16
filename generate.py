@@ -28,7 +28,7 @@ config.background_color = BACKGROUND_COLOR
 config.max_files_cached = 1000
 
 def render_slides(high_quality=True):
-    framerate = 24
+    framerate = 20
     width, height = 480, 270
     if high_quality:
         framerate = 60
@@ -223,8 +223,8 @@ class MainScene(Scene):
     def animate_slide_representation(self):
         self.next_slide()
 
-        how_text = Text("HOW?", color=BLACK, weight=BOLD).scale(2)
-        self.add(how_text)
+        background_text = Text("BACKGROUND", color=BLACK, weight=BOLD).scale(2)
+        self.add(background_text)
         self.pause()
 
         self.next_slide()
@@ -255,20 +255,19 @@ class MainScene(Scene):
         self.pause()
 
         self.add(tangent_vectors[0])
-        self.add_bullet_point("- Every triangle has a tangent vector.", t2c={"tangent vector": RED, "triangle": ICO_BLUE})
-        self.add_bullet_point("  - A tangent vector spans the triangle.", t2c={"tangent vector": RED, "triangle": ICO_BLUE})
+        self.add_bullet_point("- One tangent vector per triangle.", t2c={"tangent vector": RED, "triangle": ICO_BLUE})
         self.pause()
 
-        self.add_bullet_point("- All tangent vectors from a vector field.", t2c={"tangent vectors": RED, "vector field": ORANGE})
+        self.add_bullet_point("- All tangent vectors form a vector field.", t2c={"tangent vectors": RED, "vector field": ORANGE})
         self.add(*tangent_vectors[1:])
         self.pause()
 
     def animate_slide_levi_civita_connection(self):
         self.next_slide()
-        self.set_title("Our first attempt")
+        self.set_title("A first attempt")
         self.pause()
 
-        self.add_bullet_point("- Levi-Civita connections")
+        self.add_bullet_point("- Levi-Civita connections.")
         self.pause()
 
         icosahedron_image = self.load_image("icosahedron")
@@ -334,7 +333,7 @@ class MainScene(Scene):
 
     def animate_slide_problem_with_curved_surface(self):
         self.next_slide()
-        self.set_title("Problem with curvature...")
+        self.set_title("A slight problem...")
 
         pos_left_1 = np.array([-3.05, 0.25, 0])
         dir_left_1 = np.array([-1.1, 0.7, 0])
@@ -351,10 +350,6 @@ class MainScene(Scene):
         curved_surface_problem_right_image = self.load_image("curved_surface_problem_right").scale(1.5)
         curved_surface_problem_right_image.shift((3, -1, 0))
 
-        self.add(transition_arrow)
-        self.add(curved_surface_problem_right_image)
-        self.pause()
-
         tangent_vector_right_start_pos = curved_surface_problem_right_image.get_center() + UP * 1.25
         tangent_vector_right_pos = Dot(tangent_vector_right_start_pos).set_opacity(0)
         tangent_vector_right_dir = Dot(UP * 1.25).set_opacity(0)
@@ -362,6 +357,8 @@ class MainScene(Scene):
             lambda: Arrow(max_tip_length_to_length_ratio=0.12).set_color(RED)
                 .put_start_and_end_on(tangent_vector_right_pos.get_center(), tangent_vector_right_pos.get_center() + tangent_vector_right_dir.get_center())
         )
+        self.add(transition_arrow)
+        self.add(curved_surface_problem_right_image)
         self.add(tangent_vector_right)
         self.pause()
 
@@ -384,9 +381,9 @@ class MainScene(Scene):
         self.pause()
 
         pos_left_2_3 = np.array([-1.62, -1.45, 0])
-        dir_left_2 = np.array([-1.3, 0.6, 0])
+        dir_left_2 = np.array([-1.1, 0.6, 0])
         dir_left_2 *= 1.2 / np.linalg.norm(dir_left_2)
-        dir_left_3 = np.array([0.05, 0.8, 0])
+        dir_left_3 = np.array([-0.02, 0.8, 0])
         dir_left_3 *= 1.2 / np.linalg.norm(dir_left_3)
         tangent_vector_left_2 = Arrow(max_tip_length_to_length_ratio=0.12).set_color(RED)
         tangent_vector_left_2.put_start_and_end_on(pos_left_2_3, pos_left_2_3 + dir_left_2)
@@ -438,11 +435,11 @@ class MainScene(Scene):
         self.set_title("Contribution")
 
         intro_bunny_image = self.load_image("intro_bunny")
-        intro_bunny_image.shift(3.2 * RIGHT)
+        intro_bunny_image.shift(3.6 * RIGHT)
         self.add(intro_bunny_image)
         self.pause()
 
-        self.add_bullet_point("- Algorithm for constructing vector fields.")
+        self.add_bullet_point("- Algorithm for enforcing zero-defect cycles.")
         self.pause()
 
         self.add_bullet_point("  - Efficient;")
@@ -456,7 +453,12 @@ class MainScene(Scene):
 
     def animate_slide_adjustment_angles(self):
         self.next_slide()
-        self.set_title("How to control directions?")
+        how_text = Text("HOW?", color=BLACK, weight=BOLD).scale(2)
+        self.add(how_text)
+        self.pause()
+
+        self.next_slide()
+        self.set_title("How to control?")
         self.pause()
 
         icosahedron_image = self.load_image("icosahedron_two_triangles")
@@ -782,7 +784,6 @@ class MainScene(Scene):
 
         self.next_slide()
         self.set_title("Supporting singularities")
-        self.pause()
 
         intro_bunny_image.scale(0.5).to_corner(DOWN + LEFT)
         hairy_ball_image.scale(0.75).next_to(intro_bunny_image, RIGHT).align_to(intro_bunny_image, DOWN)
@@ -1063,6 +1064,13 @@ class MainScene(Scene):
         self.pause()
 
         self.play(
+            *[arrow.animate.set_color(ORANGE) for arrow in path_1_arrows if arrow != left_arrow],
+            *[arrow.animate.set_color(ORANGE) for arrow in path_2_arrows if arrow != right_arrow],
+            run_time=0.4
+        )
+        self.pause()
+
+        self.play(
             Rotate(tangent_vector_pos, (5 / 3) * np.pi, about_point=v[(1, 1)].get_center()),
             rate_func=rush_into,
             run_time=1.2
@@ -1184,14 +1192,18 @@ class MainScene(Scene):
         self.add_bullet_point("- Noncontractible cycles not covered yet.", t2c={"Noncontractible": PURPLE}, t2s={"yet": ITALIC})
         self.pause()
 
-        self.add_bullet_point("- How to get noncontractible cycles?", t2c={"noncontractible cycles": PURPLE})
+        self.add_bullet_point("- How to get noncontractible cycles?", t2c={"noncontractible": PURPLE})
         self.pause()
 
         tree_cotree_decomposition_image = self.load_image("tree_cotree_decomposition")
         tree_cotree_decomposition_image.scale(0.8).to_corner(DOWN + RIGHT)
         self.add_bullet_point("  - Tree-cotree decomposition!", t2s={"Tree-cotree decomposition": ITALIC})
         self.add_bullet_point("    (Eppstein 2003)", color=GREY).shift(UP * 0.12)
+        self.next_bullet_point_pos += UP * 0.12
         self.add(tree_cotree_decomposition_image)
+        self.pause()
+
+        self.add_bullet_point("  - Obtains 2g cycles.", t2c={"2g": PURPLE})
         self.pause()
 
     def animate_slide_matrix_equation(self):
@@ -1213,7 +1225,7 @@ class MainScene(Scene):
                 elif ix % 2:
                     tex = Tex("$+$" if np.random.random() < 0.6 else "$-$")
                 else:
-                    idx = np.random.randint(1, 100)
+                    idx = np.random.randint(1, 100) if HIGH_QUALITY else 42
                     tex = Tex(f"$x_{{e_{{{idx}}}}}$")
                 tex.set_color(BLACK)
                 tex.scale(0.8).shift((-5.6 + 0.7 * ix, 3.5 - 0.73 * iy, 0))
@@ -1234,10 +1246,216 @@ class MainScene(Scene):
         self.pause()
 
         mask_rectangle = Square(100).set_fill(WHITE, opacity=0.7)
-        matrix_formula_tex = Tex("$A$", "$\\textbf{x}$" "$~=~$", "$\\textbf{b}$", color=BLACK).set_background_stroke(color=WHITE, opacity=1, width=6).scale(1.6)
+        matrix_formula_tex = Tex("$A$", "$\\textbf{x}$", "$~=~$", "$\\textbf{b}$", color=BLACK).set_background_stroke(color=WHITE, opacity=1, width=12).scale(1.6)
 
         self.add(mask_rectangle)
         self.add(matrix_formula_tex)
+        self.pause()
+
+        minimiziation_formula_tex = Tex("$\\textbf{min} \\, ||\\textbf{x}||_2$", color=BLACK).set_background_stroke(color=WHITE, opacity=1, width=12).scale(1.6)
+        minimiziation_formula_tex.shift(UP * 0.75)
+        self.play(
+            matrix_formula_tex.animate.shift(DOWN * 0.75),
+            FadeIn(minimiziation_formula_tex, shift=DOWN * 0.75),
+            run_time=0.4,
+        )
+        self.pause()
+
+        suite_sparse_qr_tex = Tex("$\\texttt{(SuiteSparseQR)}$", color=DARK_GREY).set_background_stroke(color=WHITE, opacity=1, width=8).scale(0.8)
+        suite_sparse_qr_tex.shift(UP * 1.35)
+        self.add(suite_sparse_qr_tex)
+        self.pause()
+
+    def animate_slide_constructing_field(self):
+        self.next_slide()
+
+        v, e, f = self.generate_triangle_mesh([
+            [*range(10)] for _ in range(6)
+        ], spacing=2)
+        mesh_group = Group(*f.values(), *e.values(), *v.values())
+        mesh_group.move_to(ORIGIN)
+
+        singularity_vertices = {
+            (1, 1): 1,
+            (6, 3): -2,
+            (4, 4): -1,
+        }
+        k_texts = []
+        for key, value in singularity_vertices.items():
+            vertex = v[key]
+            vertex.scale(3).set_fill_color(GREEN)
+            k_text = Tex(f"${value}$", color=WHITE).scale(0.6).move_to(vertex)
+            mesh_group.add(k_text)
+            k_texts.append(k_text)
+
+        self.add(mesh_group)
+        self.pause()
+
+        edge_circles = []
+        for edge in e.values():
+            edge_circle = Circle(0.1).set_stroke(LIGHT_GRAY, opacity=1, width=3).set_fill(WHITE, opacity=1)
+            edge_circle.move_to(edge)
+            edge_circles.append(edge_circle)
+
+        self.play(
+            *[FadeIn(j, scale=3) for j in edge_circles],
+            run_time=0.6
+        )
+        self.pause()
+
+        start_face_key = frozenset([(2, 3), (3, 3), (3, 4)])
+        end_face_key = frozenset([(6, 1), (6, 2), (7, 2)])
+
+        self.add_foreground_mobjects(*v.values())
+        self.add_foreground_mobjects(*edge_circles)
+        self.add_foreground_mobjects(*k_texts)
+
+        triangle_animations = []
+        new_edges = []
+        for face_key in [start_face_key, end_face_key]:
+            keys = [*face_key]
+            curr_new_edges = []
+            for i in range(3):
+                edge_key = frozenset(keys[:i] + keys[i+1:])
+                new_edge = e[edge_key].copy()
+                new_edge = new_edge.set_color(ORANGE)
+                curr_new_edges.append(new_edge)
+
+            new_edges.extend(curr_new_edges)
+            triangle_animations.append(
+                FadeIn(Group(*curr_new_edges), scale=0.5)
+            )
+        self.play(
+            *triangle_animations,
+            run_time=0.6
+        )
+        self.pause()
+
+        self.remove_foreground_mobjects(*v.values())
+        self.remove_foreground_mobjects(*edge_circles)
+        self.remove_foreground_mobjects(*k_texts)
+
+        def get_direction(pos):
+            x, y, _ = pos
+            dir = np.array([np.exp(0.2 * x), -0.4 * y + 1.5, 0])
+            dir *= 0.9 / np.linalg.norm(dir)
+            return dir
+
+        def func(t):
+            return 0.5 * linear(t) + 0.5 * smooth(t)
+
+        tangent_vectors = {}
+        for f_key, face in f.items():
+            pos = face.get_center()
+            dir = get_direction(pos)
+
+            tangent_vector = Arrow(max_tip_length_to_length_ratio=0.12).set_color(RED).put_start_and_end_on(pos, pos + dir)
+            tangent_vectors[f_key] = tangent_vector
+
+        self.play(
+            self.create_arrow(tangent_vectors[start_face_key]),
+            run_time=0.6
+        )
+        self.pause()
+
+        paths = [
+            [1, 2, 3, 2, 3, 2, 1, 2, 3, 2, 3, 0, 0, 0, 0, 0, 0],
+            [0, 0, 1, 2, 3, 4, 3, 2, 3, 2, 1, 6, 1, 2, 3, 2, 3],
+            [0, 0, 0, 3, 2, 3, 2, 1, 2, 3, 2, 3, 2, 1, 0, 0, 0],
+        ]
+        travelling_vectors = [tangent_vectors[start_face_key].copy().set_opacity(0.6) for _ in paths]
+        for t in range(len(paths[0])):
+            move_animations = []
+            for i in range(len(paths)):
+                v = paths[i][t]
+                if v > 0:
+                    angle = (v - 1) * np.pi / 3
+                    vector = travelling_vectors[i]
+                    pos = vector.get_start()
+                    new_pos = pos + (2 / np.sqrt(3)) * np.array([np.sin(angle), np.cos(angle), 0])
+                    new_dir = get_direction(new_pos)
+                    move_animations.append(
+                        vector.animate.put_start_and_end_on(new_pos, new_pos + new_dir)
+                    )
+
+            self.play(
+                *move_animations,
+                run_time=0.2,
+                rate_func=func
+            )
+        self.pause()
+
+        self.play(
+            *[FadeOut(j) for j in new_edges],
+            *[FadeOut(j) for j in travelling_vectors],
+            run_time=0.4
+        )
+        self.pause()
+
+        neighbors = {face_key: [] for face_key in f}
+        for face_key_i in f:
+            for face_key_j in f:
+                if len(face_key_i & face_key_j) == 2:
+                    neighbors[face_key_i].append(face_key_j)
+
+        q = [start_face_key]
+        seen = set(q)
+        while True:
+            come_from = {}
+            for face_key_i in q:
+                for face_key_j in neighbors[face_key_i]:
+                    if face_key_j not in seen and face_key_j not in come_from:
+                        come_from[face_key_j] = face_key_i
+            
+            if not come_from:
+                break
+            
+            animations = []
+            for face_key_j, face_key_i in come_from.items():
+                vector_i = tangent_vectors[face_key_i]
+                vector_j = tangent_vectors[face_key_j]
+
+                vector_j.generate_target()
+                vector_j.put_start_and_end_on(*vector_i.get_start_and_end())
+                animations.append(
+                    MoveToTarget(vector_j)
+                )
+            self.play(
+                *animations,
+                run_time=0.2,
+                rate_func=func
+            )
+
+            seen |= set(come_from.keys())
+            q = [*come_from.keys()]
+        self.pause()
+
+    def animate_slide_evaluation(self):
+        self.next_slide()
+        self.set_title("Evaluation")
+        self.pause()
+
+        effective_examples_image = self.load_image("effective_examples").scale(0.6)
+        effective_examples_image.to_corner(UP + RIGHT)
+        self.add_bullet_point("- Effective;")
+        self.add(effective_examples_image)
+        self.pause()
+
+        self.add_bullet_point("- Efficient, O(|E|);", t2c={"O(|E|)": BLUE}, t2s={"O(|E|)": ITALIC})
+        self.pause()
+
+        robust_examples_image = self.load_image("robust_examples").scale(0.65)
+        robust_examples_image.to_corner(DOWN + RIGHT)
+        self.add_bullet_point("- Robust;")
+        self.add(robust_examples_image)
+        self.pause()
+
+        self.add_bullet_point("- Solved!", t2c={"Solved!": GREEN})
+        self.pause()
+
+        self.add_bullet_point("")
+        self.add_bullet_point("- Best Paper Award (Symposium")
+        self.add_bullet_point("  on Geometry Processing 2010)").shift(UP * 0.12)
         self.pause()
 
     ###################################
@@ -1247,26 +1465,27 @@ class MainScene(Scene):
     ###################################
 
     def animate(self):
-        self.animate_slide_intro_outro()
-        self.animate_slide_problem_description()
-        self.animate_slide_relevance()
+        # self.animate_slide_intro_outro()
+        # self.animate_slide_problem_description()
+        # self.animate_slide_relevance()
 
-        self.animate_slide_representation()
-        self.animate_slide_levi_civita_connection()
-        self.animate_slide_problem_with_curved_surface()
+        # self.animate_slide_representation()
+        # self.animate_slide_levi_civita_connection()
+        # self.animate_slide_problem_with_curved_surface()
 
-        self.animate_slide_paper_contribution()
+        # self.animate_slide_paper_contribution()
 
-        self.animate_slide_adjustment_angles()
-        self.animate_slide_equation_for_basis_cycle()
-        self.animate_slide_basis_cycle_with_singularities()
-        self.animate_slide_adding_basis_cycles()
-        self.animate_slide_cycle_construction_demonstration()
-        self.animate_slide_explain_noncontractible_cycles()
+        # self.animate_slide_adjustment_angles()
+        # self.animate_slide_equation_for_basis_cycle()
+        # self.animate_slide_basis_cycle_with_singularities()
+        # self.animate_slide_adding_basis_cycles()
+        # self.animate_slide_cycle_construction_demonstration()
+        # self.animate_slide_explain_noncontractible_cycles()
 
-        self.animate_slide_matrix_equation()
-        # self.animate_slide_constructing_field()
+        # self.animate_slide_matrix_equation()
+        self.animate_slide_constructing_field()
 
+        # self.animate_slide_evaluation()
         # self.animate_slide_implementation_plan()
 
         self.animate_slide_intro_outro()
