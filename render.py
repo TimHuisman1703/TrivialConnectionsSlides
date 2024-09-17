@@ -201,13 +201,13 @@ class MainScene(Scene):
 
         hair_rendering_image = self.load_image("hair_rendering").scale(0.45)
         hair_rendering_image.to_corner(UP + RIGHT).shift(LEFT * 3.5)
-        self.add_bullet_point("- Hair rendering")
+        self.add_bullet_point("- Hair rendering;")
         self.add(hair_rendering_image)
         self.pause()
 
         surface_parameterization_image = self.load_image("surface_parameterization").scale(0.75)
         surface_parameterization_image.to_corner(UP + RIGHT)
-        self.add_bullet_point("- Surface parameterization")
+        self.add_bullet_point("- Surface parameterization;")
         self.add(surface_parameterization_image)
         self.pause()
 
@@ -699,8 +699,18 @@ class MainScene(Scene):
         )
         self.pause()
 
-        self.add_bullet_point("- Idea: cancel out defect", t2w={"cancel out": BOLD})
+        self.add_bullet_point("- Idea: cancel out defect", t2c={"defect": RED, "adjustment angles": BLUE}, t2w={"cancel out": BOLD})
         self.add_bullet_point("  using adjustment angles.").shift(UP * 0.12)
+        self.pause()
+
+        linear_formula_tex = Tex("$x_1$", "$ + $", "$x_2$", "$ + $", "$x_3$", "$ + $", "$x_4$", "$ + $", "$x_5$", "$ + $", "$x_6$", "$~=~$", "$-\\delta$", color=BLACK)
+        linear_formula_tex.set_color_by_tex("x", BLUE)
+        linear_formula_tex.set_color_by_tex("\\delta", RED)
+        linear_formula_tex.move_to(self.next_bullet_point_pos, LEFT + UP).shift((0.3, -0.8, 0))
+        self.play(
+            Write(linear_formula_tex),
+            run_time=0.8
+        )
         self.pause()
 
         x = [
@@ -722,17 +732,6 @@ class MainScene(Scene):
                 ScaleInPlace(edge_circles[i], 2),
                 run_time=0.6
             )
-        self.pause()
-
-        linear_formula_tex = Tex("$x_1$", "$ + $", "$x_2$", "$ + $", "$x_3$", "$ + $", "$x_4$", "$ + $", "$x_5$", "$ + $", "$x_6$", "$~=~$", "$-\\delta$", color=BLACK)
-        linear_formula_tex.set_color_by_tex("x", BLUE)
-        linear_formula_tex.set_color_by_tex("\\delta", RED)
-        linear_formula_tex.move_to(self.next_bullet_point_pos, LEFT + UP).shift((0.3, -0.8, 0))
-
-        self.play(
-            Write(linear_formula_tex),
-            run_time=0.8
-        )
         self.pause()
 
     def animate_slide_basis_cycle_with_singularities(self):
@@ -949,6 +948,14 @@ class MainScene(Scene):
         )
         self.pause()
 
+        linear_formula_tex_1 = Tex("$\\sum_{x \\in C_1} x = -\\delta_1$", color=BLUE)
+        linear_formula_tex_1.shift((-3, -3, 0))
+        linear_formula_tex_2 = Tex("$\\sum_{x \\in C_2} x = -\\delta_2$", color=GREEN)
+        linear_formula_tex_2.shift((3, -3, 0))
+        self.add(linear_formula_tex_1)
+        self.add(linear_formula_tex_2)
+        self.pause()
+
         tangent_vector_pos = Dot(f[frozenset({(1, 0), (1, 1), (2, 1)})].get_center()).set_opacity(0)
         tangent_vector_dir = Dot(UP * 1.6).set_opacity(0)
         tangent_vector = always_redraw(
@@ -963,82 +970,38 @@ class MainScene(Scene):
 
         tangent_vector_ghost_1 = tangent_vector.copy().set_opacity(0.4)
         self.add(tangent_vector_ghost_1)
-        angle_defect_1 = 0.12 * np.pi
-        angle_defect_arc_1 = Arc(1.7, 0.5 * np.pi, angle_defect_1).set_color(BLUE)
-        angle_defect_arc_1.shift(tangent_vector_pos.get_center())
-        angle_defect_text_1 = Tex("$\\delta_1$").set_color(BLUE).scale(0.6)
-        angle_defect_text_1.move_to(angle_defect_arc_1).shift((-0.05, 0.25, 0))
         self.play(
             Rotate(tangent_vector_pos, 2 * np.pi, about_point=v[(1, 1)].get_center()),
-            Rotate(tangent_vector_dir, angle_defect_1, about_point=ORIGIN),
-            run_time=1.6
-        )
-        self.play(
-            Create(angle_defect_arc_1),
-            FadeIn(angle_defect_text_1),
-            run_time=0.8
+            run_time=1.2
         )
         self.pause()
 
         tangent_vector_ghost_2 = tangent_vector.copy().set_opacity(0.4)
         self.add(tangent_vector_ghost_2)
-        angle_defect_2 = 0.18 * np.pi
-        angle_defect_arc_2 = Arc(1.7, 0.5 * np.pi + angle_defect_1, angle_defect_2).set_color(GREEN)
-        angle_defect_arc_2.shift(tangent_vector_pos.get_center())
-        angle_defect_text_2 = Tex("$\\delta_2$").set_color(GREEN).scale(0.6)
-        angle_defect_text_2.move_to(angle_defect_arc_2).shift((-0.2, 0.25, 0))
         self.play(
             Rotate(tangent_vector_pos, 2 * np.pi, about_point=v[(2, 1)].get_center()),
-            Rotate(tangent_vector_dir, angle_defect_2, about_point=ORIGIN),
-            run_time=1.6
-        )
-        self.play(
-            Create(angle_defect_arc_2),
-            FadeIn(angle_defect_text_2),
-            run_time=0.8
-        )
-        self.pause()
-
-        linear_formula_tex_1 = Tex("$\\sum_{x \\in C_1} x = -\\delta_1$", color=BLUE)
-        linear_formula_tex_1.shift(DOWN * 3 + LEFT * 3)
-        self.add(linear_formula_tex_1)
-        self.pause()
-
-        angle_defect_text_2.generate_target()
-        angle_defect_text_2.target.rotate(angle_defect_1)
-        angle_defect_text_2.target.rotate(-angle_defect_1, about_point=tangent_vector_pos.get_center())
-        self.play(
-            FadeOut(angle_defect_text_1),
-            Uncreate(angle_defect_arc_1),
-            MoveToTarget(angle_defect_text_2),
-            Rotate(tangent_vector_ghost_2, -angle_defect_1, about_point=tangent_vector_pos.get_center()),
-            Rotate(tangent_vector_dir, -angle_defect_1, about_point=ORIGIN),
-            Rotate(angle_defect_arc_2, -angle_defect_1, about_point=tangent_vector_pos.get_center()),
             run_time=1.2
         )
         self.pause()
 
-        linear_formula_tex_2 = Tex("$\\sum_{x \\in C_2} x = -\\delta_2$", color=GREEN)
-        linear_formula_tex_2.shift(DOWN * 3 + RIGHT * 3)
-        self.add(linear_formula_tex_2)
+        partial_defect_angle = 0.15 * np.pi
+        self.play(
+            Rotate(tangent_vector_pos, (5 / 3) * np.pi, about_point=v[(1, 1)].get_center()),
+            Rotate(tangent_vector_dir, partial_defect_angle, about_point=ORIGIN),
+            run_time=1.2
+        )
+        self.pause()
+
+        self.play(
+            tangent_vector_pos.animate.shift(UP * 2 / np.sqrt(3)),
+            Rotate(tangent_vector_dir, -partial_defect_angle, about_point=ORIGIN),
+            run_time=0.4
+        )
         self.wait(0.5)
         self.play(
-            FadeOut(angle_defect_text_2),
-            Uncreate(angle_defect_arc_2),
-            Rotate(tangent_vector_dir, -angle_defect_2, about_point=ORIGIN),
-            run_time=1.2
-        )
-        self.remove(tangent_vector_ghost_1)
-        self.remove(tangent_vector_ghost_2)
-        self.pause()
-
-        self.play(
-            Rotate(tangent_vector_pos, 2 * np.pi, about_point=v[(1, 1)].get_center()),
-            run_time=1.2
-        )
-        self.play(
-            Rotate(tangent_vector_pos, 2 * np.pi, about_point=v[(2, 1)].get_center()),
-            run_time=1.2
+            tangent_vector_pos.animate.shift(DOWN * 2 / np.sqrt(3)),
+            Rotate(tangent_vector_dir, partial_defect_angle, about_point=ORIGIN),
+            run_time=0.4
         )
         self.pause()
 
@@ -1058,6 +1021,12 @@ class MainScene(Scene):
             FadeOut(right_arrow, scale=0.5, shift=DOWN * 0.3),
             FadeOut(plus_text),
             FadeOut(minus_text),
+            run_time=1.2
+        )
+        self.wait(0.2)
+        self.play(
+            Rotate(tangent_vector_pos, (5 / 3) * np.pi, about_point=v[(2, 1)].get_center()),
+            Rotate(tangent_vector_dir, -partial_defect_angle, about_point=ORIGIN),
             run_time=1.2
         )
         self.pause()
@@ -1530,6 +1499,9 @@ class MainScene(Scene):
         self.add_bullet_point("- Efficient, O(|E|);", t2c={"O(|E|)": BLUE}, t2s={"O(|E|)": ITALIC})
         self.pause()
 
+        self.add_bullet_point("- Controllable;")
+        self.pause()
+
         robust_examples_image = self.load_image("robust_examples").scale(0.65)
         robust_examples_image.to_corner(DOWN + RIGHT)
         self.add_bullet_point("- Robust;")
@@ -1541,7 +1513,7 @@ class MainScene(Scene):
 
         self.add_bullet_point("")
         self.add_bullet_point("- Best Paper Award (Symposium")
-        self.add_bullet_point("  on Geometry Processing 2010)").shift(UP * 0.12)
+        self.add_bullet_point("  on Geometry Processing 2010).").shift(UP * 0.12)
         self.pause()
 
     def animate_slide_implementation_plan(self):
@@ -1552,7 +1524,31 @@ class MainScene(Scene):
 
         self.next_slide()
         self.set_title("Implementation Plan")
-        self.add_bullet_point("- TODO", color=RED)
+
+        link_text = Tex("$\\texttt{https://www.cs.cmu.edu/\\~{}kmcrane/Projects/TrivialConnections/code.zip}$", color=GREY).scale(0.5)
+        link_text.to_corner(DOWN + LEFT)
+        comb_image = self.load_image("comb").scale(0.4)
+        comb_image.to_corner(UP + RIGHT)
+        self.add_bullet_point("- Source code publically available!")
+        self.add(link_text)
+        self.add(comb_image)
+        self.pause()
+
+        self.add_bullet_point("  - Only shows output...")
+        self.pause()
+
+        opengl_image = self.load_image("opengl").scale(0.2)
+        opengl_image.next_to(comb_image, DOWN).align_to(comb_image, RIGHT)
+        self.add_bullet_point("- Interactive visuals.", t2w={"Interactive visuals": BOLD})
+        self.add_bullet_point("  - Step-by-step visuals, source code + OpenGL.")
+        self.add(opengl_image)
+        self.pause()
+
+        manim_image = self.load_image("manim").scale(0.7)
+        manim_image.next_to(opengl_image, DOWN).align_to(opengl_image, RIGHT)
+        self.add_bullet_point("- Noninteractive visuals.", t2w={"Noninteractive visuals": BOLD})
+        self.add_bullet_point("  - Demonstrative animations, Manim.", t2s={"Manim": ITALIC})
+        self.add(manim_image)
         self.pause()
 
     ###################################
@@ -1592,3 +1588,5 @@ if __name__ == "__main__":
     render_slides(HIGH_QUALITY)
 
     import run
+
+# TODO: Redo Bigger Cycles section
