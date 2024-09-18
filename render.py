@@ -3,7 +3,7 @@ import numpy as np
 import os
 import shutil
 
-HIGH_QUALITY = False
+HIGH_QUALITY = True
 
 BLACK = "#000000"
 DARK_GREY = "#3F3F3F"
@@ -188,7 +188,7 @@ class MainScene(Scene):
         self.add(from_bunny_to_field_image)
         self.pause()
 
-        self.add_bullet_point("- Smooth everywhere, except on marked singularity vertices.", t2w={"Smooth": BOLD, "singularity vertices": BOLD})
+        self.add_bullet_point("- Smooth everywhere, except on predefined singularity vertices.", t2w={"Smooth": BOLD, "singularity vertices": BOLD})
         self.pause()
 
     def animate_slide_relevance(self):
@@ -220,7 +220,7 @@ class MainScene(Scene):
         self.add_bullet_point("- ...").shift(DOWN * 0.1)
         self.pause()
 
-    def animate_slide_representation(self):
+    def animate_slide_definitions(self):
         self.next_slide()
 
         background_text = Text("BACKGROUND", color=BLACK, weight=BOLD).scale(2)
@@ -228,7 +228,8 @@ class MainScene(Scene):
         self.pause()
 
         self.next_slide()
-        self.set_title("Representation")
+        self.set_title("Definitions")
+        self.pause()
 
         pos_dir_length = [
             ([0.45, -0.2, 0], [0.8, -0.2, 0], 0.7),
@@ -399,34 +400,7 @@ class MainScene(Scene):
         )
         self.pause()
 
-        angle_2 = np.arctan2(dir_left_2[0], dir_left_2[1])
-        angle_3 = np.arctan2(dir_left_3[0], dir_left_3[1])
-        defect_arc_left = Arc(1.3, 0.5 * np.pi - angle_2, angle_2 - angle_3).set_color(RED)
-        defect_arc_left.shift(pos_left_2_3)
-        defect_arc_text_left = Tex("$\\delta$", color=RED).set_background_stroke(color=WHITE, width=5)
-        defect_arc_text_left.scale(0.8).move_to(defect_arc_left).shift((-0.2, 0.4, 0))
-
-        arrow_origin = middle_point + DOWN * 0.5
-        angle_right = 0.23 * np.pi
-        defect_arrow_right_1 = Line(arrow_origin, arrow_origin + 1.5 * np.array([-np.sin(angle_right / 2), -np.cos(angle_right / 2), 0])).set_color(RED)
-        defect_arrow_right_2 = Line(arrow_origin, arrow_origin + 1.5 * np.array([np.sin(angle_right / 2), -np.cos(angle_right / 2), 0])).set_color(RED)
-        defect_arc_right = Arc(1.6, -0.5 * np.pi - angle_right / 2, angle_right).set_color(RED)
-        defect_arc_right.shift(arrow_origin)
-        defect_arc_text_right = Tex("$\\delta$", color=RED)
-        defect_arc_text_right.scale(0.8).move_to(defect_arc_right).shift((0, -0.3, 0))
-
-        self.play(
-            Create(defect_arc_left),
-            FadeIn(defect_arc_text_left),
-            self.create_arrow(defect_arrow_right_1),
-            self.create_arrow(defect_arrow_right_2),
-            Create(defect_arc_right),
-            FadeIn(defect_arc_text_right),
-            run_time=0.6
-        )
-        self.pause()
-
-        self.add_bullet_point("- Path dependence...", t2c={"defect": RED, "δ": RED}, t2s={"path dependence": ITALIC})
+        self.add_bullet_point("- Path-dependent...", t2c={"defect": RED, "δ": RED}, t2s={"path dependence": ITALIC})
         self.pause()
 
         tangent_vector_right_fade_out = tangent_vector_right.copy()
@@ -438,15 +412,9 @@ class MainScene(Scene):
             FadeOut(tangent_vector_left_1),
             FadeOut(tangent_vector_left_2),
             FadeOut(tangent_vector_left_3),
-            FadeOut(defect_arc_left),
-            FadeOut(defect_arc_text_left),
             FadeOut(tangent_vector_right_fade_out),
             FadeOut(tangent_vector_right_ghost_1),
             FadeOut(tangent_vector_right_ghost_2),
-            FadeOut(defect_arrow_right_1),
-            FadeOut(defect_arrow_right_2),
-            FadeOut(defect_arc_right),
-            FadeOut(defect_arc_text_right),
             run_time=0.6
         )
 
@@ -487,12 +455,22 @@ class MainScene(Scene):
         )
         self.pause()
 
+        defect_arc_right = Arc(1.6, 0.5 * np.pi + defect_angle / 2, -defect_angle).set_color(RED)
+        defect_arc_right.shift(pos_b)
+        defect_arc_text_right = Tex("$\\delta$", color=RED)
+        defect_arc_text_right.scale(0.8).move_to(defect_arc_right).shift((0, 0.4, 0))
         self.play(
             Rotate(tangent_vector_pos_1, np.pi / 2, about_point=(0, 1, 0)),
             Rotate(tangent_vector_pos_2, -np.pi / 2, about_point=(0, -4, 0)),
             Rotate(tangent_vector_dir_1, defect_angle / 2, about_point=ORIGIN),
             Rotate(tangent_vector_dir_2, -defect_angle / 2, about_point=ORIGIN),
             run_time=0.8
+        )
+        self.wait(0.2)
+        self.play(
+            Create(defect_arc_right),
+            FadeIn(defect_arc_text_right),
+            run_time=0.6
         )
         self.pause()
 
@@ -505,6 +483,8 @@ class MainScene(Scene):
         self.play(
             tangent_vector_1_static.animate.set_opacity(0.4),
             tangent_vector_2_static.animate.set_opacity(0.4),
+            defect_arc_right.animate.set_stroke(opacity=0.4),
+            defect_arc_text_right.animate.set_opacity(0.4),
             path_arrow_2.animate.scale((-1, 1, 1)),
             run_time=0.8
         )
@@ -540,23 +520,19 @@ class MainScene(Scene):
         defect_arc_left.shift(pos_a)
         defect_arc_text_left = Tex("$\\delta$", color=RED)
         defect_arc_text_left.scale(0.8).move_to(defect_arc_left).shift((0.2, 0.4, 0))
-        defect_arc_right = Arc(1.6, 0.5 * np.pi + defect_angle / 2, -defect_angle).set_color(RED)
-        defect_arc_right.shift(pos_b)
-        defect_arc_text_right = Tex("$\\delta$", color=RED)
-        defect_arc_text_right.scale(0.8).move_to(defect_arc_right).shift((0, 0.4, 0))
         self.play(
             tangent_vector_1_static.animate.set_opacity(1),
             tangent_vector_2_static.animate.set_opacity(1),
             tangent_vector_3_ghost.animate.set_opacity(1),
+            defect_arc_right.animate.set_stroke(opacity=1),
+            defect_arc_text_right.animate.set_opacity(1),
             Create(defect_arc_left),
-            Create(defect_arc_right),
             FadeIn(defect_arc_text_left),
-            FadeIn(defect_arc_text_right),
             run_time=0.6
         )
         self.pause()
 
-        self.add_bullet_point("- Goal: No defect on any cycle.", t2w={"No defect": BOLD, "any cycle": BOLD})
+        self.add_bullet_point("- Goal: No defect (δ) on any cycle.", t2c={"δ": RED}, t2w={"No defect": BOLD, "any cycle": BOLD})
         self.pause()
 
     def animate_slide_paper_contribution(self):
@@ -620,7 +596,7 @@ class MainScene(Scene):
         pos_i = f[frozenset({(0, 0), (0, 1), (1, 1)})].get_center()
         pos_j = f[frozenset({(1, 2), (0, 1), (1, 1)})].get_center()
         tangent_vector_i = Arrow(max_tip_length_to_length_ratio=0.12).set_color(RED).put_start_and_end_on(pos_i, pos_i + displacement)
-        self.play(
+        self.play( 
             self.create_arrow(tangent_vector_i),
             run_time=0.6
         )
@@ -1645,7 +1621,7 @@ class MainScene(Scene):
         link_text.to_corner(DOWN + LEFT)
         comb_image = self.load_image("comb").scale(0.4)
         comb_image.to_corner(UP + RIGHT)
-        self.add_bullet_point("- Source code publically available!")
+        self.add_bullet_point("- Source code publicly available!")
         self.add(link_text)
         self.add(comb_image)
         self.pause()
@@ -1674,35 +1650,31 @@ class MainScene(Scene):
     ###################################
 
     def animate(self):
-        # self.animate_slide_intro_outro()
-        # self.animate_slide_problem_description()
-        # self.animate_slide_relevance()
+        self.animate_slide_intro_outro()
+        self.animate_slide_problem_description()
+        self.animate_slide_relevance()
 
-        # self.animate_slide_representation()
-        # self.animate_slide_levi_civita_connection()
+        self.animate_slide_definitions()
+        self.animate_slide_levi_civita_connection()
         self.animate_slide_problem_with_curved_surface()
 
-        # self.animate_slide_paper_contribution()
+        self.animate_slide_paper_contribution()
 
-        # self.animate_slide_adjustment_angles()
-        # self.animate_slide_equation_for_basis_cycle()
-        # self.animate_slide_basis_cycle_with_singularities()
-        # self.animate_slide_adding_basis_cycles()
-        # self.animate_slide_cycle_construction_demonstration()
-        # self.animate_slide_explain_noncontractible_cycles()
+        self.animate_slide_adjustment_angles()
+        self.animate_slide_equation_for_basis_cycle()
+        self.animate_slide_basis_cycle_with_singularities()
+        self.animate_slide_adding_basis_cycles()
+        self.animate_slide_cycle_construction_demonstration()
+        self.animate_slide_explain_noncontractible_cycles()
 
-        # self.animate_slide_matrix_equation()
-        # self.animate_slide_constructing_field()
-        # self.animate_slide_extensions()
+        self.animate_slide_matrix_equation()
+        self.animate_slide_constructing_field()
+        self.animate_slide_extensions()
 
-        # self.animate_slide_conclusion()
-        # self.animate_slide_implementation_plan()
+        self.animate_slide_conclusion()
+        self.animate_slide_implementation_plan()
 
         self.animate_slide_intro_outro()
 
 if __name__ == "__main__":
     render_slides(HIGH_QUALITY)
-
-    import run
-
-# TODO: Redo Bigger Cycles section
