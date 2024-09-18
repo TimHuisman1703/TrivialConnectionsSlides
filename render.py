@@ -3,7 +3,7 @@ import numpy as np
 import os
 import shutil
 
-HIGH_QUALITY = True
+HIGH_QUALITY = False
 
 BLACK = "#000000"
 DARK_GREY = "#3F3F3F"
@@ -179,7 +179,7 @@ class MainScene(Scene):
 
     def animate_slide_problem_description(self):
         self.next_slide()
-        self.set_title("Problem")
+        self.set_title("Aim")
         self.pause()
 
         self.add_bullet_point("- Create vector fields on the surface of a 3D shape.", t2w={"vector fields": BOLD, "surface": BOLD, "3D shape": BOLD})
@@ -364,16 +364,17 @@ class MainScene(Scene):
         self.pause()
 
         middle_point = curved_surface_problem_right_image.get_center() + DOWN * 0.2
-        tangent_vector_right_ghost = tangent_vector_right.copy()
-        self.add(tangent_vector_right_ghost)
+        tangent_vector_right_ghost_1 = tangent_vector_right.copy()
+        self.add(tangent_vector_right_ghost_1)
         self.play(
             Rotate(tangent_vector_right_pos, 0.855 * np.pi, about_point=middle_point),
             run_time=1.2
         )
         self.pause()
 
-        tangent_vector_right_ghost.set_opacity(0.4)
-        self.add(tangent_vector_right.copy())
+        tangent_vector_right_ghost_1.set_opacity(0.4)
+        tangent_vector_right_ghost_2 = tangent_vector_right.copy()
+        self.add(tangent_vector_right_ghost_2)
         tangent_vector_right_pos.move_to(tangent_vector_right_start_pos)
         self.play(
             Rotate(tangent_vector_right_pos, -0.855 * np.pi, about_point=middle_point),
@@ -425,7 +426,134 @@ class MainScene(Scene):
         )
         self.pause()
 
-        self.add_bullet_point("- Defects (δ) lead to path dependence.", t2c={"defect": RED, "δ": RED}, t2s={"path dependence": ITALIC})
+        self.add_bullet_point("- Path dependence...", t2c={"defect": RED, "δ": RED}, t2s={"path dependence": ITALIC})
+        self.pause()
+
+        tangent_vector_right_fade_out = tangent_vector_right.copy()
+        self.remove(tangent_vector_right)
+        self.play(
+            FadeOut(curved_surface_problem_left_image),
+            FadeOut(transition_arrow),
+            FadeOut(curved_surface_problem_right_image),
+            FadeOut(tangent_vector_left_1),
+            FadeOut(tangent_vector_left_2),
+            FadeOut(tangent_vector_left_3),
+            FadeOut(defect_arc_left),
+            FadeOut(defect_arc_text_left),
+            FadeOut(tangent_vector_right_fade_out),
+            FadeOut(tangent_vector_right_ghost_1),
+            FadeOut(tangent_vector_right_ghost_2),
+            FadeOut(defect_arrow_right_1),
+            FadeOut(defect_arrow_right_2),
+            FadeOut(defect_arc_right),
+            FadeOut(defect_arc_text_right),
+            run_time=0.6
+        )
+
+        defect_angle = 0.3 * np.pi
+        pos_a = np.array([-2.5, -1.5, 0])
+        pos_b = np.array([2.5, -1.5, 0])
+        point_a = Triangle(color=BLACK)
+        point_a.shift(DOWN * 0.25).rotate(-np.pi / 2).scale(0.25).shift(pos_a)
+        point_b = Triangle(color=BLACK)
+        point_b.shift(DOWN * 0.25).rotate(np.pi / 2).scale(0.25).shift(pos_b)
+        path_arrow_1 = CurvedArrow(pos_b + np.array([-0.1, 0.1, 0]), pos_a + np.array([0.1, 0.1, 0])).set_color(LIGHT_GREY).scale((-1, 1, 1))
+        path_arrow_2 = CurvedArrow(pos_a + np.array([0.1, -0.1, 0]), pos_b + np.array([-0.1, -0.1, 0])).set_color(LIGHT_GREY)
+        self.play(
+            GrowFromCenter(point_a),
+            GrowFromCenter(point_b),
+            Create(path_arrow_1),
+            Create(path_arrow_2),
+            run_time=0.4
+        )
+        self.wait(0.2)
+
+        tangent_vector_pos_1 = Dot(pos_a).set_opacity(0)
+        tangent_vector_dir_1 = Dot(UP * 1.5).set_opacity(0)
+        tangent_vector_1 = always_redraw(
+            lambda: Arrow(max_tip_length_to_length_ratio=0.12).set_color(RED)
+                .put_start_and_end_on(tangent_vector_pos_1.get_center(), tangent_vector_pos_1.get_center() + tangent_vector_dir_1.get_center())
+        )
+        tangent_vector_pos_2 = Dot(pos_a).set_opacity(0)
+        tangent_vector_dir_2 = Dot(UP * 1.5).set_opacity(0)
+        tangent_vector_2 = always_redraw(
+            lambda: Arrow(max_tip_length_to_length_ratio=0.12).set_color(RED)
+                .put_start_and_end_on(tangent_vector_pos_2.get_center(), tangent_vector_pos_2.get_center() + tangent_vector_dir_2.get_center())
+        )
+        self.play(
+            self.create_arrow(tangent_vector_1),
+            self.create_arrow(tangent_vector_2),
+            run_time=0.6
+        )
+        self.pause()
+
+        self.play(
+            Rotate(tangent_vector_pos_1, np.pi / 2, about_point=(0, 1, 0)),
+            Rotate(tangent_vector_pos_2, -np.pi / 2, about_point=(0, -4, 0)),
+            Rotate(tangent_vector_dir_1, defect_angle / 2, about_point=ORIGIN),
+            Rotate(tangent_vector_dir_2, -defect_angle / 2, about_point=ORIGIN),
+            run_time=0.8
+        )
+        self.pause()
+
+        tangent_vector_1_static = tangent_vector_1.copy()
+        tangent_vector_2_static = tangent_vector_2.copy()
+        self.add(tangent_vector_1_static)
+        self.add(tangent_vector_2_static)
+        self.remove(tangent_vector_1)
+        self.remove(tangent_vector_2)
+        self.play(
+            tangent_vector_1_static.animate.set_opacity(0.4),
+            tangent_vector_2_static.animate.set_opacity(0.4),
+            path_arrow_2.animate.scale((-1, 1, 1)),
+            run_time=0.8
+        )
+        self.pause()
+
+        tangent_vector_pos_3 = Dot(pos_a).set_opacity(0)
+        tangent_vector_dir_3 = Dot(UP * 1.5).set_opacity(0)
+        tangent_vector_3 = always_redraw(
+            lambda: Arrow(max_tip_length_to_length_ratio=0.12).set_color(RED)
+                .put_start_and_end_on(tangent_vector_pos_3.get_center(), tangent_vector_pos_3.get_center() + tangent_vector_dir_3.get_center())
+        )
+        tangent_vector_3_ghost = tangent_vector_3.copy().set_opacity(0.4)
+        self.play(
+            self.create_arrow(tangent_vector_3),
+            run_time=0.4
+        )
+        self.wait(0.4)
+
+        self.add(tangent_vector_3_ghost)
+        self.play(
+            Rotate(tangent_vector_pos_3, -np.pi / 2, about_point=(0, -4, 0)),
+            Rotate(tangent_vector_dir_3, -defect_angle / 2, about_point=ORIGIN),
+            run_time=0.6
+        )
+        self.play(
+            Rotate(tangent_vector_pos_3, -np.pi / 2, about_point=(0, 1, 0)),
+            Rotate(tangent_vector_dir_3, -defect_angle / 2, about_point=ORIGIN),
+            run_time=0.6
+        )
+        self.pause()
+
+        defect_arc_left = Arc(1.6, 0.5 * np.pi, -defect_angle).set_color(RED)
+        defect_arc_left.shift(pos_a)
+        defect_arc_text_left = Tex("$\\delta$", color=RED)
+        defect_arc_text_left.scale(0.8).move_to(defect_arc_left).shift((0.2, 0.4, 0))
+        defect_arc_right = Arc(1.6, 0.5 * np.pi + defect_angle / 2, -defect_angle).set_color(RED)
+        defect_arc_right.shift(pos_b)
+        defect_arc_text_right = Tex("$\\delta$", color=RED)
+        defect_arc_text_right.scale(0.8).move_to(defect_arc_right).shift((0, 0.4, 0))
+        self.play(
+            tangent_vector_1_static.animate.set_opacity(1),
+            tangent_vector_2_static.animate.set_opacity(1),
+            tangent_vector_3_ghost.animate.set_opacity(1),
+            Create(defect_arc_left),
+            Create(defect_arc_right),
+            FadeIn(defect_arc_text_left),
+            FadeIn(defect_arc_text_right),
+            run_time=0.6
+        )
         self.pause()
 
         self.add_bullet_point("- Goal: No defect on any cycle.", t2w={"No defect": BOLD, "any cycle": BOLD})
@@ -584,8 +712,8 @@ class MainScene(Scene):
 
     def animate_slide_equation_for_basis_cycle(self):
         self.next_slide()
-        self.set_title("Simple approach")
-        self.add_bullet_point("- Goal: Zero defect on one cycle.", t2w={"one": BOLD})
+        self.set_title("Our first equation")
+        self.add_bullet_point("- Goal: No defect on one cycle.", t2w={"one": BOLD})
         self.pause()
 
         v, e, f = self.generate_triangle_mesh([
@@ -699,8 +827,8 @@ class MainScene(Scene):
         )
         self.pause()
 
-        self.add_bullet_point("- Idea: cancel out defect", t2c={"defect": RED, "adjustment angles": BLUE}, t2w={"cancel out": BOLD})
-        self.add_bullet_point("  using adjustment angles.").shift(UP * 0.12)
+        self.add_bullet_point("- Idea: cancel out defect", t2c={"defect": RED}, t2w={"cancel out": BOLD})
+        self.add_bullet_point("  using adjustment angles.", t2c={"adjustment angles": BLUE}).shift(UP * 0.12)
         self.pause()
 
         linear_formula_tex = Tex("$x_1$", "$ + $", "$x_2$", "$ + $", "$x_3$", "$ + $", "$x_4$", "$ + $", "$x_5$", "$ + $", "$x_6$", "$~=~$", "$-\\delta$", color=BLACK)
@@ -744,30 +872,10 @@ class MainScene(Scene):
         self.add(intro_bunny_image)
         self.pause()
 
-        self.add_bullet_point("- Why even allow singularities?", t2s={"allow": ITALIC})
+        self.add_bullet_point("- Why not remove singularities?", t2s={"remove": ITALIC})
         self.pause()
 
-        self.next_slide()
-        poincare_hopf_theorem_text = Text("Poincaré-Hopf Theorem", color=BLACK).scale(1.5).shift(2.5 * UP)
-        equation_tex = Tex("$\\sum_v k_v$", "$~=~$", "$\\chi(M)$", "$~=~$", "$|V| - |E| + |F|$", color=DARK_GREY)
-        equation_tex.set_color_by_tex("\\sum", GREEN)
-        equation_tex.set_color_by_tex("\\chi", RED)
-        equation_tex.set_color_by_tex("|V|", RED)
-        equation_label_1 = Text("\"Sum of singularities\" on mesh", color=GREEN)
-        equation_label_1.scale(0.5).next_to(equation_tex[0], UP)
-        equation_label_2 = Text("Euler characteristic of mesh", color=RED)
-        equation_label_2.scale(0.5).next_to(Group(equation_tex[2:]), DOWN)
-        self.add(poincare_hopf_theorem_text)
-        self.add(equation_tex)
-        self.pause()
-
-        self.add(equation_label_1)
-        self.add(equation_label_2)
-        self.pause()
-
-        equation_label_2_clarification = Text("(Constant, usually not zero)", color=BLACK)
-        equation_label_2_clarification.scale(0.4).next_to(equation_label_2, DOWN)
-        self.add(equation_label_2_clarification)
+        self.add_bullet_point("  - We can't!")
         self.pause()
 
         self.next_slide()
@@ -895,7 +1003,7 @@ class MainScene(Scene):
     def animate_slide_adding_basis_cycles(self):
         self.next_slide()
         self.set_title("What about bigger cycles?")
-        self.add_bullet_point("- Goal: Zero defect on all cycles.", t2w={"all": BOLD})
+        self.add_bullet_point("- Goal: No defect on any cycle.", t2w={"any": BOLD})
         self.pause()
 
         v, e, f = self.generate_triangle_mesh([
@@ -906,7 +1014,7 @@ class MainScene(Scene):
         mesh_group = Group(*f.values(), *e.values(), *v.values())
         mesh_group.move_to(DOWN * 0.5)
         self.add(mesh_group)
-        self.pause()
+        self.wait(0.5)
 
         path_1 = [
             f[frozenset({(0, 0), (0, 1), (1, 1)})],
@@ -1144,7 +1252,7 @@ class MainScene(Scene):
     def animate_slide_explain_noncontractible_cycles(self):
         self.next_slide()
         self.set_title("A few more cycles")
-        self.add_bullet_point("- Have we covered all cycles?")
+        self.add_bullet_point("- Did we cover all cycles?", t2s={"all": ITALIC})
         self.pause()
 
         cycle_types_image_1 = self.load_image("cycle_types_1").scale(0.9)
@@ -1160,7 +1268,7 @@ class MainScene(Scene):
         self.add_bullet_point("- Noncontractible cycles not covered yet.", t2c={"Noncontractible": PURPLE}, t2s={"yet": ITALIC})
         self.pause()
 
-        self.add_bullet_point("- How to get noncontractible cycles?", t2c={"noncontractible": PURPLE})
+        self.add_bullet_point("- How to find noncontractible cycles?", t2c={"noncontractible": PURPLE})
         self.pause()
 
         tree_cotree_decomposition_image = self.load_image("tree_cotree_decomposition")
@@ -1284,7 +1392,7 @@ class MainScene(Scene):
 
             new_edges.extend(curr_new_edges)
             triangle_animations.append(
-                FadeIn(Group(*curr_new_edges), scale=0.5)
+                FadeIn(Group(*curr_new_edges), scale=10)
             )
 
         def get_direction(pos):
@@ -1307,12 +1415,19 @@ class MainScene(Scene):
         self.add_foreground_mobjects(*v.values())
         tangent_vectors[start_face_key].z_index = 100
         self.play(
-            *triangle_animations,
+            triangle_animations[0],
             self.create_arrow(tangent_vectors[start_face_key]),
             run_time=0.6
         )
-        self.remove_foreground_mobjects(*v.values())
         self.pause()
+
+        self.play(
+            triangle_animations[1],
+            run_time=0.6
+        )
+        self.pause()
+
+        self.remove_foreground_mobjects(*v.values())
 
         self.play(
             *[FadeIn(j, scale=3) for j in edge_circles],
@@ -1485,9 +1600,9 @@ class MainScene(Scene):
         self.add(bunny_singularity_3_stroke)
         self.pause()
 
-    def animate_slide_evaluation(self):
+    def animate_slide_conclusion(self):
         self.next_slide()
-        self.set_title("Evaluation")
+        self.set_title("Conclusion")
         self.pause()
 
         effective_examples_image = self.load_image("effective_examples").scale(0.6)
@@ -1524,6 +1639,7 @@ class MainScene(Scene):
 
         self.next_slide()
         self.set_title("Implementation Plan")
+        self.pause()
 
         link_text = Tex("$\\texttt{https://www.cs.cmu.edu/\\~{}kmcrane/Projects/TrivialConnections/code.zip}$", color=GREY).scale(0.5)
         link_text.to_corner(DOWN + LEFT)
@@ -1539,14 +1655,14 @@ class MainScene(Scene):
 
         opengl_image = self.load_image("opengl").scale(0.2)
         opengl_image.next_to(comb_image, DOWN).align_to(comb_image, RIGHT)
-        self.add_bullet_point("- Interactive visuals.", t2w={"Interactive visuals": BOLD})
+        self.add_bullet_point("- Interactive media.", t2w={"Interactive visuals": BOLD})
         self.add_bullet_point("  - Step-by-step visuals, source code + OpenGL.")
         self.add(opengl_image)
         self.pause()
 
         manim_image = self.load_image("manim").scale(0.7)
         manim_image.next_to(opengl_image, DOWN).align_to(opengl_image, RIGHT)
-        self.add_bullet_point("- Noninteractive visuals.", t2w={"Noninteractive visuals": BOLD})
+        self.add_bullet_point("- Noninteractive media.", t2w={"Noninteractive visuals": BOLD})
         self.add_bullet_point("  - Demonstrative animations, Manim.", t2s={"Manim": ITALIC})
         self.add(manim_image)
         self.pause()
@@ -1558,29 +1674,29 @@ class MainScene(Scene):
     ###################################
 
     def animate(self):
-        self.animate_slide_intro_outro()
-        self.animate_slide_problem_description()
-        self.animate_slide_relevance()
+        # self.animate_slide_intro_outro()
+        # self.animate_slide_problem_description()
+        # self.animate_slide_relevance()
 
-        self.animate_slide_representation()
-        self.animate_slide_levi_civita_connection()
+        # self.animate_slide_representation()
+        # self.animate_slide_levi_civita_connection()
         self.animate_slide_problem_with_curved_surface()
 
-        self.animate_slide_paper_contribution()
+        # self.animate_slide_paper_contribution()
 
-        self.animate_slide_adjustment_angles()
-        self.animate_slide_equation_for_basis_cycle()
-        self.animate_slide_basis_cycle_with_singularities()
-        self.animate_slide_adding_basis_cycles()
-        self.animate_slide_cycle_construction_demonstration()
-        self.animate_slide_explain_noncontractible_cycles()
+        # self.animate_slide_adjustment_angles()
+        # self.animate_slide_equation_for_basis_cycle()
+        # self.animate_slide_basis_cycle_with_singularities()
+        # self.animate_slide_adding_basis_cycles()
+        # self.animate_slide_cycle_construction_demonstration()
+        # self.animate_slide_explain_noncontractible_cycles()
 
-        self.animate_slide_matrix_equation()
-        self.animate_slide_constructing_field()
-        self.animate_slide_extensions()
+        # self.animate_slide_matrix_equation()
+        # self.animate_slide_constructing_field()
+        # self.animate_slide_extensions()
 
-        self.animate_slide_evaluation()
-        self.animate_slide_implementation_plan()
+        # self.animate_slide_conclusion()
+        # self.animate_slide_implementation_plan()
 
         self.animate_slide_intro_outro()
 
