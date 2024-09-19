@@ -193,15 +193,15 @@ class MainScene(Scene):
 
     def animate_slide_relevance(self):
         self.next_slide()
-        self.set_title("Useful for what?")
+        self.set_title("Applications")
         from_bunny_to_field_image = self.load_image("from_bunny_to_field")
         from_bunny_to_field_image.scale(0.6).to_corner(DOWN + LEFT)
         self.add(from_bunny_to_field_image)
         self.pause()
 
-        hair_rendering_image = self.load_image("hair_rendering").scale(0.45)
+        hair_rendering_image = self.load_image("fur_rendering").scale(0.95)
         hair_rendering_image.to_corner(UP + RIGHT).shift(LEFT * 3.5)
-        self.add_bullet_point("- Hair rendering;")
+        self.add_bullet_point("- Fur rendering;")
         self.add(hair_rendering_image)
         self.pause()
 
@@ -401,7 +401,7 @@ class MainScene(Scene):
         self.pause()
 
         self.add_bullet_point("- Path-dependent...", t2c={"defect": RED, "δ": RED}, t2s={"path dependence": ITALIC})
-        self.pause()
+        self.wait(0.2)
 
         tangent_vector_right_fade_out = tangent_vector_right.copy()
         self.remove(tangent_vector_right)
@@ -1317,11 +1317,6 @@ class MainScene(Scene):
         )
         self.pause()
 
-        suite_sparse_qr_tex = Tex("$\\texttt{(SuiteSparseQR)}$", color=DARK_GREY).set_background_stroke(color=WHITE, opacity=1, width=8).scale(0.8)
-        suite_sparse_qr_tex.shift(UP * 1.35)
-        self.add(suite_sparse_qr_tex)
-        self.pause()
-
     def animate_slide_constructing_field(self):
         self.next_slide()
         self.set_title("Almost there...")
@@ -1446,7 +1441,7 @@ class MainScene(Scene):
             *[FadeOut(j) for j in travelling_vectors],
             run_time=0.4
         )
-        self.pause()
+        self.wait(0.4)
 
         neighbors = {face_key: [] for face_key in f}
         for face_key_i in f:
@@ -1515,9 +1510,6 @@ class MainScene(Scene):
         self.add(header_text_1)
         edge_weight_visual_image = self.load_image("edge_weight_visual").scale(1.2)
         edge_weight_visual_image.shift((-width / 3, 1.2, 0))
-        self.add(edge_weight_visual_image)
-        self.pause()
-
         dkk_definition_tex = Tex("$D_{kk}$", "$~= \\sqrt{2 (\\cot \\phi_i + \\cot \\phi_j)^{-1}}$", color=BLACK).scale(0.65)
         dkk_definition_tex.set_color_by_tex("D", GREEN)
         dkk_definition_tex.shift((-width / 3, -1.2, 0))
@@ -1526,6 +1518,7 @@ class MainScene(Scene):
         minimiziation_formula_tex.shift((-width / 3, -2.1, 0))
         matrix_formula_tex = Tex("$A$", "$\\textbf{x}$", "$~=~$", "$\\textbf{b}$", color=BLACK).scale(0.8)
         matrix_formula_tex.shift((-width / 3, -2.7, 0))
+        self.add(edge_weight_visual_image)
         self.add(dkk_definition_tex)
         self.add(matrix_formula_tex)
         self.add(minimiziation_formula_tex)
@@ -1538,24 +1531,17 @@ class MainScene(Scene):
         directional_constraints_zoom_image.shift((1.35, 0.3, 0))
         directional_constraints_zoom_stroke = Rectangle(DARK_GREY, directional_constraints_zoom_image.height, directional_constraints_zoom_image.width)
         directional_constraints_zoom_stroke.move_to(directional_constraints_zoom_image)
+        directional_constraints_tree_image = self.load_image("directional_constraints_tree").scale(0.8)
+        directional_constraints_tree_image.shift((0, -2.1, 0))
         self.add(directional_constraints_example_image)
         self.add(directional_constraints_zoom_image)
         self.add(directional_constraints_zoom_stroke)
-        self.pause()
-
-        directional_constraints_tree_image = self.load_image("directional_constraints_tree").scale(0.8)
-        directional_constraints_tree_image.shift((0, -2.1, 0))
         self.add(directional_constraints_tree_image)
         self.pause()
 
         self.add(header_text_3)
-        self.pause()
-
         intro_bunny_image = self.load_image("intro_bunny").scale(0.8)
         intro_bunny_image.shift((width / 3, -1.6, 0))
-        self.add(intro_bunny_image)
-        self.pause()
-
         bunny_singularity_1_image = self.load_image("bunny_singularity_1").scale(1.2)
         bunny_singularity_1_image.shift((width / 3 - 1.2, 0.8, 0))
         bunny_singularity_1_stroke = Rectangle(DARK_GREY, bunny_singularity_1_image.height, bunny_singularity_1_image.width)
@@ -1568,6 +1554,7 @@ class MainScene(Scene):
         bunny_singularity_3_image.shift((width / 3 + 1.2, 0.8, 0))
         bunny_singularity_3_stroke = Rectangle(DARK_GREY, bunny_singularity_3_image.height, bunny_singularity_3_image.width)
         bunny_singularity_3_stroke.move_to(bunny_singularity_3_image)
+        self.add(intro_bunny_image)
         self.add(bunny_singularity_1_image)
         self.add(bunny_singularity_1_stroke)
         self.add(bunny_singularity_2_image)
@@ -1631,14 +1618,14 @@ class MainScene(Scene):
 
         opengl_image = self.load_image("opengl").scale(0.2)
         opengl_image.next_to(comb_image, DOWN).align_to(comb_image, RIGHT)
-        self.add_bullet_point("- Interactive media.", t2w={"Interactive visuals": BOLD})
+        self.add_bullet_point("- Interactive media.", t2w={"Interactive media": BOLD})
         self.add_bullet_point("  - Step-by-step visuals, source code + OpenGL.")
         self.add(opengl_image)
         self.pause()
 
         manim_image = self.load_image("manim").scale(0.7)
         manim_image.next_to(opengl_image, DOWN).align_to(opengl_image, RIGHT)
-        self.add_bullet_point("- Noninteractive media.", t2w={"Noninteractive visuals": BOLD})
+        self.add_bullet_point("- Noninteractive media.", t2w={"Noninteractive media": BOLD})
         self.add_bullet_point("  - Demonstrative animations, Manim.", t2s={"Manim": ITALIC})
         self.add(manim_image)
         self.pause()
