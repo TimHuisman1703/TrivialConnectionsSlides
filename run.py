@@ -10,10 +10,6 @@ MOUSE_CONTROLLED = True
 DIRECTORY = os.path.realpath(os.path.dirname(__file__))
 OUTPUT_DIRECTORY = f"{DIRECTORY}/output"
 
-f = open(f"{OUTPUT_DIRECTORY}/halt_frames.txt")
-halt_frames = {int(j) for j in f.read().split()}
-f.close()
-
 cap_filenames = ["output/" + filename for filename in sorted(os.listdir(OUTPUT_DIRECTORY)) if filename.endswith(".mp4")]
 
 frames = []
@@ -36,15 +32,6 @@ for cap_filename in cap_filenames:
 
     print(f"\033[30;1mLoaded {cap_filename} ({len(curr_frames)} frames)\033[0m")
 print(f"\033[32;1mRunning!\033[0m")
-
-merged_frames = [[]]
-for idx, curr_frames in enumerate(frames):
-    merged_frames[-1].extend(curr_frames)
-    if idx in halt_frames:
-        merged_frames.append([])
-while not merged_frames[-1]:
-    merged_frames.pop()
-frames = merged_frames
 
 if FULLSCREEN:
     screen = screeninfo.get_monitors()[0]

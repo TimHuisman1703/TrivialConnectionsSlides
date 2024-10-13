@@ -5,15 +5,10 @@ from PIL import Image
 DIRECTORY = os.path.realpath(os.path.dirname(__file__))
 OUTPUT_DIRECTORY = f"{DIRECTORY}/output"
 
-f = open(f"{OUTPUT_DIRECTORY}/halt_frames.txt")
-halt_frames = {int(j) for j in f.read().split()}
-f.close()
-
 cap_filenames = ["output/" + filename for filename in sorted(os.listdir(OUTPUT_DIRECTORY)) if filename.endswith(".mp4")]
 
 pages = []
-for idx in halt_frames:
-    cap_filename = cap_filenames[idx]
+for cap_filename in cap_filenames:
     cap = cv2.VideoCapture(cap_filename)
 
     frames = []

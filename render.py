@@ -1,3 +1,4 @@
+import cv2
 from manim import *
 import numpy as np
 import os
@@ -20,7 +21,8 @@ ICO_BLUE = "#41808E"
 PURPLE = "#6311B7"
 
 DIRECTORY = os.path.realpath(os.path.dirname(__file__))
-DST_DIRECTORY = f"{DIRECTORY}/output"
+OUTPUT_DIRECTORY = f"{DIRECTORY}/output"
+HALT_FRAME_FILENAME = f"{OUTPUT_DIRECTORY}/halt_frames.txt"
 
 BACKGROUND_COLOR = WHITE
 
@@ -37,9 +39,9 @@ def render_slides(high_quality=True):
     filename = os.path.realpath(__file__)
     src_directory = f"{DIRECTORY}/media/videos/render/{height}p{framerate}/partial_movie_files/MainScene"
 
-    if os.path.exists(DST_DIRECTORY):
-        shutil.rmtree(DST_DIRECTORY)
-    os.mkdir(DST_DIRECTORY)
+    if os.path.exists(OUTPUT_DIRECTORY):
+        shutil.rmtree(OUTPUT_DIRECTORY)
+    os.mkdir(OUTPUT_DIRECTORY)
 
     command = f"manim {filename} MainScene --resolution {width},{height} --frame_rate {framerate}"
 
@@ -50,9 +52,37 @@ def render_slides(high_quality=True):
     video_list_data = [x[11:-1] for x in f.read().strip().split("\n")[1:]]
     f.close()
 
+    f = open(HALT_FRAME_FILENAME)
+    halt_frames = {int(j) for j in f.read().split()}
+    f.close()
+
+    src_filenames_clusters = [[]]
     for idx, src_filename in enumerate(video_list_data):
-        dst_filename = f"{DST_DIRECTORY}/output_{idx:04}.mp4"
-        shutil.copyfile(src_filename, dst_filename)
+        src_filenames_clusters[-1].append(src_filename)
+        if idx in halt_frames:
+            src_filenames_clusters.append([])
+    src_filenames_clusters = [j for j in src_filenames_clusters if len(j) > 0]
+
+    for idx, src_filenames in enumerate(src_filenames_clusters):
+        dst_filename = f"{OUTPUT_DIRECTORY}/output_{idx:04}.mp4"
+        video_writer = cv2.VideoWriter(dst_filename, cv2.VideoWriter_fourcc(*"mp4v"), framerate, (width, height))
+
+        for src_filename in src_filenames:
+            cap = cv2.VideoCapture(src_filename)
+            while cap.isOpened():
+                ret, frame = cap.read()
+                if ret == False:
+                    break
+                video_writer.write(frame)
+            cap.release()
+
+        video_writer.release()
+
+        print(f"\033[30;1mSaved output/output_{idx:04}.mp4 ({idx + 1}/{len(src_filenames_clusters)})\033[0m")
+
+    os.unlink(HALT_FRAME_FILENAME)
+
+    print(f"\033[32;1mDone!\033[0m")
 
 class MainScene(Scene):
     ########################################
@@ -154,7 +184,7 @@ class MainScene(Scene):
 
         self.animate()
 
-        f = open(f"{DST_DIRECTORY}/halt_frames.txt", "w")
+        f = open(HALT_FRAME_FILENAME, "w")
         f.write(" ".join(str(j) for j in self.halt_frames))
         f.close()
 
@@ -596,7 +626,7 @@ class MainScene(Scene):
         pos_i = f[frozenset({(0, 0), (0, 1), (1, 1)})].get_center()
         pos_j = f[frozenset({(1, 2), (0, 1), (1, 1)})].get_center()
         tangent_vector_i = Arrow(max_tip_length_to_length_ratio=0.12).set_color(RED).put_start_and_end_on(pos_i, pos_i + displacement)
-        self.play( 
+        self.play(
             self.create_arrow(tangent_vector_i),
             run_time=0.6
         )
