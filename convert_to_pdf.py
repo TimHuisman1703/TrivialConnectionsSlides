@@ -24,6 +24,6 @@ for cap_filename in cap_filenames:
     print(f"\033[30;1mLoaded {cap_filename}\033[0m")
 
 pages = [Image.fromarray(cv2.cvtColor(page, cv2.COLOR_BGR2RGB)) for page in pages]
-pages[0].save(f"{DIRECTORY}/slides.pdf", "PDF", resolution=100.0, save_all=True, append_images=pages[1:])
+pages[0].save(f"{DIRECTORY}/output.pdf", "PDF", resolution=100.0, save_all=True, append_images=pages[1:])
 
 print(f"\033[32;1mDone!\033[0m")
