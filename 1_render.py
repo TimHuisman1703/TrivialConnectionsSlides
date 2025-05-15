@@ -1,88 +1,42 @@
-import cv2
 from manim import *
 import numpy as np
 import os
 import shutil
+import time
+
+from utils import *
 
 HIGH_QUALITY = True
 
-BLACK = "#000000"
-DARK_GREY = "#3F3F3F"
-GREY = "#7F7F7F"
-LIGHT_GREY = "#BFBFBF"
-WHITE = "#FFFFFF"
-RED = "#C3312F"
-ORANGE = "#EB7246"
-YELLOW = "#F1BE3E"
-GREEN = "#00A390"
-CYAN = "00A6D6"
-BLUE = "#0065A1"
-ICO_BLUE = "#41808E"
-PURPLE = "#6311B7"
-
-DIRECTORY = os.path.realpath(os.path.dirname(__file__))
-OUTPUT_DIRECTORY = f"{DIRECTORY}/output"
-HALT_FRAME_FILENAME = f"{OUTPUT_DIRECTORY}/halt_frames.txt"
-
+FRAMERATE = 60
 BACKGROUND_COLOR = WHITE
 
 config.background_color = BACKGROUND_COLOR
 config.max_files_cached = 1000
 
-def render_slides(high_quality=True):
-    framerate = 20
-    width, height = 480, 270
-    if high_quality:
-        framerate = 60
-        width, height = 1920, 1080
+def render_slides():
+    start_time = time.time()
+
+    width, height = (1920, 1080) if HIGH_QUALITY else (480, 270)
 
     filename = os.path.realpath(__file__)
-    src_directory = f"{DIRECTORY}/media/videos/render/{height}p{framerate}/partial_movie_files/MainScene"
+    command = f"manim {filename} MainScene --resolution {width},{height} --frame_rate {FRAMERATE} --format=png"
+
+    print(f"\033[0;32m{command}\033[0m")
+    os.system(command)
 
     if os.path.exists(OUTPUT_DIRECTORY):
         shutil.rmtree(OUTPUT_DIRECTORY)
     os.mkdir(OUTPUT_DIRECTORY)
 
-    command = f"manim {filename} MainScene --resolution {width},{height} --frame_rate {framerate}"
+    print("\033[34;1mCopying frames...\033[0m")
 
-    print(f"\033[0;32m{command}\033[0m")
-    os.system(command)
+    for filename in os.listdir(RENDER_DIRECTORY):
+        nr = int(filename[9:-4])
+        shutil.copyfile(f"{RENDER_DIRECTORY}/{filename}", f"{OUTPUT_DIRECTORY}/{nr:06}.png")
 
-    f = open(f"{src_directory}/partial_movie_file_list.txt")
-    video_list_data = [x[11:-1] for x in f.read().strip().split("\n")[1:]]
-    f.close()
-
-    f = open(HALT_FRAME_FILENAME)
-    halt_frames = {int(j) for j in f.read().split()}
-    f.close()
-
-    src_filenames_clusters = [[]]
-    for idx, src_filename in enumerate(video_list_data):
-        src_filenames_clusters[-1].append(src_filename)
-        if idx in halt_frames:
-            src_filenames_clusters.append([])
-    src_filenames_clusters = [j for j in src_filenames_clusters if len(j) > 0]
-
-    for idx, src_filenames in enumerate(src_filenames_clusters):
-        dst_filename = f"{OUTPUT_DIRECTORY}/output_{idx:04}.mp4"
-        video_writer = cv2.VideoWriter(dst_filename, cv2.VideoWriter_fourcc(*"mp4v"), framerate, (width, height))
-
-        for src_filename in src_filenames:
-            cap = cv2.VideoCapture(src_filename)
-            while cap.isOpened():
-                ret, frame = cap.read()
-                if ret == False:
-                    break
-                video_writer.write(frame)
-            cap.release()
-
-        video_writer.release()
-
-        print(f"\033[30;1mSaved output/output_{idx:04}.mp4 ({idx + 1}/{len(src_filenames_clusters)})\033[0m")
-
-    os.unlink(HALT_FRAME_FILENAME)
-
-    print(f"\033[32;1mDone!\033[0m")
+    duration = int(time.time() - start_time)
+    print(f"\033[32;1mFinished in {duration // 60}m {duration % 60:02}s!\033[0m")
 
 class MainScene(Scene):
     ########################################
@@ -95,8 +49,23 @@ class MainScene(Scene):
         return [*filter(lambda x: issubclass(type(x), Mobject), self.mobjects)]
 
     def pause(self):
-        self.wait(0.05)
-        self.halt_frames.append(self.renderer.num_plays - 1)
+        self.wait(1)
+
+        pause_marker_rectangle = Rectangle(PAUSE_MARKER_COLOR_HEX, 100, 100).set_fill(PAUSE_MARKER_COLOR_HEX, opacity=1)
+        pause_marker_rectangle.z_index = 10 ** 10
+        self.add_foreground_mobject(pause_marker_rectangle)
+        self.add(pause_marker_rectangle)
+        self.wait(1)
+
+        self.remove(pause_marker_rectangle)
+    
+    def hold(self, run_time):
+        ignore_me = Dot().move_to(UP * 100)
+        self.add(ignore_me)
+        self.play(
+            ignore_me.animate.shift(UP * 100),
+            run_time=run_time
+        )
 
     def load_image(self, name):
         image = ImageMobject(f"{DIRECTORY}/assets/{name}.png")
@@ -176,17 +145,12 @@ class MainScene(Scene):
     def construct(self):
         np.random.seed(4136121025)
 
-        self.halt_frames = []
         self.page_number = 0
 
         self.title = None
         self.page_number_text = None
 
         self.animate()
-
-        f = open(HALT_FRAME_FILENAME, "w")
-        f.write(" ".join(str(j) for j in self.halt_frames))
-        f.close()
 
     ################################
     #                              #
@@ -431,7 +395,7 @@ class MainScene(Scene):
         self.pause()
 
         self.add_bullet_point("- Path-dependent...", t2c={"defect": RED, "δ": RED}, t2s={"path dependence": ITALIC})
-        self.wait(0.2)
+        self.hold(0.2)
 
         tangent_vector_right_fade_out = tangent_vector_right.copy()
         self.remove(tangent_vector_right)
@@ -464,7 +428,7 @@ class MainScene(Scene):
             Create(path_arrow_2),
             run_time=0.4
         )
-        self.wait(0.2)
+        self.hold(0.2)
 
         tangent_vector_pos_1 = Dot(pos_a).set_opacity(0)
         tangent_vector_dir_1 = Dot(UP * 1.5).set_opacity(0)
@@ -496,7 +460,7 @@ class MainScene(Scene):
             Rotate(tangent_vector_dir_2, -defect_angle / 2, about_point=ORIGIN),
             run_time=0.8
         )
-        self.wait(0.2)
+        self.hold(0.2)
         self.play(
             Create(defect_arc_right),
             FadeIn(defect_arc_text_right),
@@ -531,7 +495,7 @@ class MainScene(Scene):
             self.create_arrow(tangent_vector_3),
             run_time=0.4
         )
-        self.wait(0.4)
+        self.hold(0.4)
 
         self.add(tangent_vector_3_ghost)
         self.play(
@@ -620,7 +584,7 @@ class MainScene(Scene):
             Group(*v.values(), *f.values()).animate.scale(2).move_to(ORIGIN),
             run_time=1.2
         )
-        self.wait(0.2)
+        self.hold(0.2)
 
         displacement = np.array([1.0, 0.75, 0])
         pos_i = f[frozenset({(0, 0), (0, 1), (1, 1)})].get_center()
@@ -673,7 +637,7 @@ class MainScene(Scene):
             Rotate(tangent_vector_i, adjustment_angle_value, about_point=pos_j),
             run_time=0.8
         )
-        self.wait(0.3)
+        self.hold(0.3)
 
         adjustment_angle_indicator = edge_circle_text.copy().set_background_stroke(color=WHITE, width=5)
         self.add(adjustment_angle_indicator)
@@ -699,7 +663,7 @@ class MainScene(Scene):
             tangent_vector_j.animate.shift(pos_i - pos_j),
             run_time=0.8
         )
-        self.wait(0.2)
+        self.hold(0.2)
 
         tangent_vector_j_ghost = tangent_vector_j.copy().set_background_stroke(color=WHITE, width=5)
         tangent_vector_j_ghost.set_opacity(0.35)
@@ -755,7 +719,7 @@ class MainScene(Scene):
             edge_circle_texts.append(edge_circle_text)
 
         self.add(mesh_group)
-        self.wait(0.4)
+        self.hold(0.4)
 
         path_arrows = []
         for i in range(len(path_face_keys)):
@@ -798,7 +762,7 @@ class MainScene(Scene):
                 run_time=0.2
             )
             self.add_foreground_mobject(tangent_vectors[i])
-        self.wait(0.3)
+        self.hold(0.3)
 
         animations = []
         for i in range(len(tangent_vectors)):
@@ -814,7 +778,7 @@ class MainScene(Scene):
             *animations,
             run_time=0.8
         )
-        self.wait(0.2)
+        self.hold(0.2)
 
         defect_angle = len(path_face_keys) * angle_delta
         defect_arc = Arc(1.6, -0.5 * np.pi, defect_angle).set_stroke(RED, width=5)
@@ -1020,7 +984,7 @@ class MainScene(Scene):
         mesh_group = Group(*f.values(), *e.values(), *v.values())
         mesh_group.move_to(DOWN * 0.5)
         self.add(mesh_group)
-        self.wait(0.5)
+        self.hold(0.5)
 
         path_1 = [
             f[frozenset({(0, 0), (0, 1), (1, 1)})],
@@ -1111,7 +1075,7 @@ class MainScene(Scene):
             Rotate(tangent_vector_dir, -partial_defect_angle, about_point=ORIGIN),
             run_time=0.4
         )
-        self.wait(0.5)
+        self.hold(0.5)
         self.play(
             tangent_vector_pos.animate.shift(DOWN * 2 / np.sqrt(3)),
             Rotate(tangent_vector_dir, partial_defect_angle, about_point=ORIGIN),
@@ -1137,7 +1101,7 @@ class MainScene(Scene):
             FadeOut(minus_text),
             run_time=1.2
         )
-        self.wait(0.2)
+        self.hold(0.2)
         self.play(
             Rotate(tangent_vector_pos, (5 / 3) * np.pi, about_point=v[(2, 1)].get_center()),
             Rotate(tangent_vector_dir, -partial_defect_angle, about_point=ORIGIN),
@@ -1223,19 +1187,19 @@ class MainScene(Scene):
                 *[self.create_arrow(j) for j in inner_arrows | outer_arrows],
                 run_time=0.4
             )
-            self.wait(0.6)
+            self.hold(0.6)
 
             self.play(
                 *[j.animate.set_color(ORANGE) for j in inner_arrows],
                 run_time=0.4
             )
-            self.wait(0.6)
+            self.hold(0.6)
 
             self.play(
                 *[FadeOut(j) for j in inner_arrows],
                 run_time=0.4
             )
-            self.wait(0.8)
+            self.hold(0.8)
 
             return outer_arrows
 
@@ -1471,7 +1435,7 @@ class MainScene(Scene):
             *[FadeOut(j) for j in travelling_vectors],
             run_time=0.4
         )
-        self.wait(0.4)
+        self.hold(0.4)
 
         neighbors = {face_key: [] for face_key in f}
         for face_key_i in f:
@@ -1694,4 +1658,4 @@ class MainScene(Scene):
         self.animate_slide_intro_outro()
 
 if __name__ == "__main__":
-    render_slides(HIGH_QUALITY)
+    render_slides()

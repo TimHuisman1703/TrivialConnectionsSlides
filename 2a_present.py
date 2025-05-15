@@ -1,36 +1,16 @@
 import cv2
-import os
 import screeninfo
 import time
+
+from utils import *
 
 WINDOW_NAME = "Trivial Connections on Discrete Surfaces"
 FULLSCREEN = True
 MOUSE_CONTROLLED = True
+FRAMERATE = 60
 
-DIRECTORY = os.path.realpath(os.path.dirname(__file__))
-OUTPUT_DIRECTORY = f"{DIRECTORY}/output"
+videos = read_output_videos()
 
-cap_filenames = ["output/" + filename for filename in sorted(os.listdir(OUTPUT_DIRECTORY)) if filename.endswith(".mp4")]
-
-frames = []
-framerate = None
-for cap_filename in cap_filenames:
-    cap = cv2.VideoCapture(cap_filename)
-
-    if framerate == None:
-        framerate = cap.get(cv2.CAP_PROP_FPS)
-
-    curr_frames = []
-    while cap.isOpened():
-        ret, frame = cap.read()
-        if ret == False:
-            break
-        curr_frames.append(frame)
-    cap.release()
-
-    frames.append(curr_frames)
-
-    print(f"\033[30;1mLoaded {cap_filename} ({len(curr_frames)} frames)\033[0m")
 print(f"\033[32;1mRunning!\033[0m")
 
 if FULLSCREEN:
@@ -60,8 +40,8 @@ video_nr = 0
 time_since_last_click = time.time()
 
 while True:
-    frame_nr = max(0, min(int((time.time() - time_since_last_click) * framerate), len(frames[video_nr]) - 1))
-    cv2.imshow(WINDOW_NAME, frames[video_nr][frame_nr])
+    frame_nr = max(0, min(int((time.time() - time_since_last_click) * FRAMERATE), len(videos[video_nr]) - 1))
+    cv2.imshow(WINDOW_NAME, videos[video_nr][frame_nr])
     key = cv2.waitKey(1)
 
     if key in [32, 13]:
@@ -74,12 +54,12 @@ while True:
         action = 3
 
     if action == 0:
-        if video_nr < len(frames) - 1:
+        if video_nr < len(videos) - 1:
             video_nr += 1
             time_since_last_click = time.time()
         action = -1
     elif action == 1:
-        if video_nr < len(frames) - 1:
+        if video_nr < len(videos) - 1:
             video_nr += 1
             time_since_last_click = 0
         action = -1
