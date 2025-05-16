@@ -2,6 +2,8 @@ import cv2
 import os
 import numpy as np
 
+FRAMERATE = 60
+
 DIRECTORY = os.path.realpath(os.path.dirname(__file__))
 RENDER_DIRECTORY = f"{DIRECTORY}/media/images/1_render"
 OUTPUT_DIRECTORY = f"{DIRECTORY}/output"
@@ -37,5 +39,5 @@ def read_output_videos():
 
     while not videos[-1]:
         videos.pop()
-    
+
     return videos

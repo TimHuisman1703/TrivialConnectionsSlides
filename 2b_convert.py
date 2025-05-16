@@ -1,6 +1,7 @@
 import cv2
 from lxml import etree
 import os
+from PIL import Image
 from pptx import Presentation
 from pptx.util import Inches
 
@@ -16,9 +17,12 @@ prs = Presentation()
 prs.slide_width = Inches(16)
 prs.slide_height = Inches(9)
 
+pages = [Image.fromarray(cv2.cvtColor(frames[-1], cv2.COLOR_BGR2RGB)) for frames in videos]
+pages[0].save(f"{DIRECTORY}/output.pdf", "PDF", resolution=100.0, save_all=True, append_images=pages[1:])
+
 for idx, frames in enumerate(videos):
     cv2.imwrite(THUMBNAIL_FILENAME, frames[0])
-    video_writer = cv2.VideoWriter(VIDEO_FILENAME, cv2.VideoWriter_fourcc(*"mp4v"), 60, (width, height))
+    video_writer = cv2.VideoWriter(VIDEO_FILENAME, cv2.VideoWriter_fourcc(*"mp4v"), FRAMERATE, (width, height))
     for frame in frames:
         video_writer.write(frame)
     video_writer.release()

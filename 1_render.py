@@ -6,9 +6,8 @@ import time
 
 from utils import *
 
-HIGH_QUALITY = True
+DEBUG = False
 
-FRAMERATE = 60
 BACKGROUND_COLOR = WHITE
 
 config.background_color = BACKGROUND_COLOR
@@ -17,7 +16,7 @@ config.max_files_cached = 1000
 def render_slides():
     start_time = time.time()
 
-    width, height = (1920, 1080) if HIGH_QUALITY else (480, 270)
+    width, height = (480, 270) if DEBUG else (1920, 1080)
 
     filename = os.path.realpath(__file__)
     command = f"manim {filename} MainScene --resolution {width},{height} --frame_rate {FRAMERATE} --format=png"
@@ -49,7 +48,7 @@ class MainScene(Scene):
         return [*filter(lambda x: issubclass(type(x), Mobject), self.mobjects)]
 
     def pause(self):
-        self.wait(1)
+        self.hold(0.15)
 
         pause_marker_rectangle = Rectangle(PAUSE_MARKER_COLOR_HEX, 100, 100).set_fill(PAUSE_MARKER_COLOR_HEX, opacity=1)
         pause_marker_rectangle.z_index = 10 ** 10
@@ -58,7 +57,7 @@ class MainScene(Scene):
         self.wait(1)
 
         self.remove(pause_marker_rectangle)
-    
+
     def hold(self, run_time):
         ignore_me = Dot().move_to(UP * 100)
         self.add(ignore_me)
@@ -81,7 +80,7 @@ class MainScene(Scene):
 
     def update_page_number(self):
         self.page_number += 1
-        self.page_number_text = Text(str(self.page_number), color=GREY).scale(0.6).to_corner(DOWN + RIGHT)
+        self.page_number_text = Text("#" if DEBUG else str(self.page_number), color=GREY).scale(0.6).to_corner(DOWN + RIGHT)
         self.add_foreground_mobject(self.page_number_text)
         self.add(self.page_number_text)
 
